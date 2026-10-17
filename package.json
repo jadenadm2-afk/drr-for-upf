@@ -1,0 +1,15 @@
+{
+  "name": "upf-membership-system",
+  "version": "1.0.0",
+  "description": "نظام استمارة وعضوية الجبهة الشعبية المتحدة UPF - المجلس التنفيذي جامعة زالنجي",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

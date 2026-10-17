@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>لوحة الإدارة – UPF</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--black:#0d0d0d;--red:#c0272d;--navy:#1a1a5e;--green:#1a6b2f;--gold:#d4a843;--bg:#0a0a14;--card:rgba(255,255,255,0.05);--border:rgba(212,168,67,0.28);--ibg:rgba(255,255,255,0.06);--iborder:rgba(212,168,67,0.38);--sh:0 20px 50px rgba(0,0,0,0.55);}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Cairo',sans-serif;background:var(--bg);background-image:radial-gradient(ellipse at 10% 20%,rgba(26,26,94,.22) 0%,transparent 50%),radial-gradient(ellipse at 90% 80%,rgba(192,39,45,.14) 0%,transparent 50%);min-height:100vh;color:#e8e8e8;overflow-x:hidden}
+
+    /* ════ LOGIN PAGE ════ */
+    #page-login{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px;position:relative}
+    .login-bg-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(26,26,94,.35) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+    .login-card{width:100%;max-width:440px;background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid var(--border);border-radius:24px;padding:44px 40px 48px;position:relative;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.08);z-index:1}
+    .login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--black),var(--red),var(--navy),var(--green))}
+    .login-logos{display:flex;justify-content:center;gap:14px;margin-bottom:20px}
+    .login-logo{width:54px;height:54px;object-fit:contain;border-radius:50%;background:rgba(255,255,255,.05);padding:3px;filter:drop-shadow(0 4px 10px rgba(212,168,67,.35))}
+    .login-title{text-align:center;margin-bottom:8px}
+    .login-title h1{font-size:1.25rem;font-weight:800;color:var(--gold)}
+    .login-title p{font-size:.8rem;color:rgba(255,255,255,.45);margin-top:4px}
+    .login-divider{width:50px;height:2px;background:linear-gradient(90deg,var(--red),var(--gold));border-radius:2px;margin:18px auto 26px}
+    .login-field{margin-bottom:18px}
+    .login-field label{display:block;font-size:.84rem;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:7px;display:flex;align-items:center;gap:7px}
+    .login-field input{width:100%;padding:12px 16px;background:var(--ibg);border:1px solid var(--iborder);border-radius:10px;color:#fff;font-family:'Cairo',sans-serif;font-size:.92rem;outline:none;direction:rtl;transition:all .25s}
+    .login-field input:focus{border-color:var(--gold);background:rgba(212,168,67,.06);box-shadow:0 0 0 3px rgba(212,168,67,.14)}
+    .login-field input::placeholder{color:rgba(255,255,255,.28)}
+    .login-field .toggle-pw{position:relative}
+    .login-field .toggle-pw input{padding-left:44px}
+    .toggle-eye{position:absolute;left:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:rgba(255,255,255,.4);font-size:1rem;transition:color .2s;background:none;border:none}
+    .toggle-eye:hover{color:var(--gold)}
+    .btn-login{width:100%;padding:13px;background:linear-gradient(135deg,var(--navy),#0d0d40);color:#fff;border:none;border-radius:12px;font-family:'Cairo',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 5px 20px rgba(26,26,94,.55);position:relative;overflow:hidden;letter-spacing:.5px}
+    .btn-login::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);transition:left .5s}
+    .btn-login:hover{transform:translateY(-2px);box-shadow:0 9px 28px rgba(26,26,94,.7)}
+    .btn-login:hover::before{left:100%}
+    .login-err{margin-top:14px;text-align:center;background:rgba(192,39,45,.18);border:1px solid rgba(239,83,80,.3);color:#ef5350;border-radius:8px;padding:9px 16px;font-size:.83rem;display:none}
+    .login-err.show{display:block;animation:shake .4s ease}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    .login-hint{text-align:center;margin-top:20px;font-size:.75rem;color:rgba(255,255,255,.2)}
+    .particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+    .particle{position:absolute;border-radius:50%;animation:float linear infinite;opacity:0}
+    @keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:.5}90%{opacity:.15}100%{transform:translateY(-80px) rotate(720deg);opacity:0}}
+
+    /* ════ ADMIN SHELL (after login) ════ */
+    #admin-shell{display:none;min-height:100vh}
+    /* Sidebar */
+    .sidebar{position:fixed;top:0;right:0;width:220px;height:100vh;background:rgba(10,10,20,.92);border-left:1px solid var(--border);backdrop-filter:blur(14px);display:flex;flex-direction:column;z-index:90;overflow-y:auto}
+    .sidebar-brand{padding:22px 18px 16px;border-bottom:1px solid var(--border)}
+    .sidebar-brand img{width:40px;height:40px;object-fit:contain;border-radius:50%}
+    .sidebar-brand .brand-text{font-size:.82rem;font-weight:700;color:var(--gold);margin-top:8px;line-height:1.4}
+    .sidebar-brand .brand-sub{font-size:.68rem;color:rgba(255,255,255,.38);margin-top:2px}
+    .sidebar-nav{flex:1;padding:14px 10px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;cursor:pointer;color:rgba(255,255,255,.55);font-size:.85rem;font-weight:600;transition:all .25s;border:1px solid transparent;margin-bottom:4px;text-decoration:none}
+    .nav-item:hover{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.07)}
+    .nav-item.active{background:rgba(212,168,67,.12);color:var(--gold);border-color:var(--border)}
+    .nav-item .nav-icon{font-size:1.05rem;width:22px;text-align:center}
+    .sidebar-footer{padding:14px 16px;border-top:1px solid var(--border)}
+    .btn-logout{width:100%;padding:9px;background:rgba(192,39,45,.15);border:1px solid rgba(192,39,45,.3);color:#ef9a9a;border-radius:8px;font-family:'Cairo',sans-serif;font-size:.82rem;cursor:pointer;transition:all .3s}
+    .btn-logout:hover{background:rgba(192,39,45,.28);color:#fff}
+    /* Main content */
+    .main-content{margin-right:220px;min-height:100vh;padding:28px 28px 60px}
+    .page-section{display:none;animation:fadeIn .4s ease}
+    .page-section.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    .section-header{margin-bottom:24px}
+    .section-header h2{font-size:1.3rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:10px}
+    .section-header h2 span{color:var(--gold)}
+    .section-header p{font-size:.82rem;color:rgba(255,255,255,.45);margin-top:4px}
+
+    /* ════ DASHBOARD ════ */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 18px;position:relative;overflow:hidden;transition:transform .3s,box-shadow .3s;cursor:default}
+    .stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.4)}
+    .stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+    .stat-card.total::after{background:linear-gradient(90deg,var(--navy),var(--gold))}
+    .stat-card.active::after{background:linear-gradient(90deg,var(--green),#4caf50)}
+    .stat-card.inactive::after{background:linear-gradient(90deg,var(--red),#ef5350)}
+    .stat-card.pending::after{background:linear-gradient(90deg,#b8860b,var(--gold))}
+    .stat-icon{font-size:1.8rem;margin-bottom:8px}
+    .stat-val{font-size:2.2rem;font-weight:900;color:#fff;line-height:1;margin-bottom:3px}
+    .stat-label{font-size:.75rem;color:rgba(255,255,255,.5)}
+    .charts-row{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:24px}
+    .charts-row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 18px}
+    .chart-title{font-size:.85rem;font-weight:700;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+    .chart-wrap{position:relative;height:210px}
+
+    /* Table */
+    .table-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:4px}
+    .table-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+    .table-title-label{font-size:.88rem;font-weight:700;color:var(--gold)}
+    .search-input{background:var(--ibg);border:1px solid var(--iborder);border-radius:50px;padding:7px 16px;color:#fff;font-family:'Cairo',sans-serif;font-size:.8rem;outline:none;direction:rtl;width:200px;transition:all .25s}
+    .search-input:focus{border-color:var(--gold);width:240px}
+    .search-input::placeholder{color:rgba(255,255,255,.3)}
+    .filter-sel{background:var(--ibg);border:1px solid var(--iborder);border-radius:50px;padding:7px 13px;color:#fff;font-family:'Cairo',sans-serif;font-size:.78rem;outline:none;direction:rtl;cursor:pointer}
+    .filter-sel option{background:#1a1a2e}
+    .table-wrap{overflow-x:auto;max-height:480px;overflow-y:auto}
+    table{width:100%;border-collapse:collapse;font-size:.8rem}
+    thead tr{background:linear-gradient(90deg,rgba(192,39,45,.22),rgba(26,26,94,.22));position:sticky;top:0;z-index:1}
+    th{padding:10px 13px;font-weight:700;color:var(--gold);text-align:right;white-space:nowrap;border-bottom:1px solid var(--border)}
+    tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .2s}
+    tbody tr:hover{background:rgba(255,255,255,.04)}
+    td{padding:9px 13px;color:rgba(255,255,255,.78);text-align:right;vertical-align:middle;white-space:nowrap}
+    td.photo-cell img{width:32px;height:38px;object-fit:cover;border-radius:5px;border:1px solid var(--border)}
+    td.photo-cell .no-photo{width:32px;height:38px;background:rgba(255,255,255,.05);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.9rem;border:1px dashed rgba(255,255,255,.15)}
+    .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700}
+    .b-active{background:rgba(26,107,47,.28);color:#4caf50;border:1px solid rgba(76,175,80,.28)}
+    .b-inactive{background:rgba(192,39,45,.2);color:#ef5350;border:1px solid rgba(239,83,80,.28)}
+    .b-pending{background:rgba(212,168,67,.18);color:var(--gold);border:1px solid rgba(212,168,67,.28)}
+    .table-footer{padding:10px 18px;border-top:1px solid var(--border);font-size:.76rem;color:rgba(255,255,255,.38);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+    .btn-del{background:transparent;border:none;color:rgba(239,83,80,.45);cursor:pointer;font-size:.78rem;padding:3px 7px;border-radius:5px;transition:all .2s}
+    .btn-del:hover{background:rgba(239,83,80,.12);color:#ef5350}
+    .empty-state{text-align:center;padding:44px;color:rgba(255,255,255,.25);font-size:.85rem}
+    .loading-state{text-align:center;padding:44px;color:rgba(255,255,255,.38)}
+
+    /* ════ CONFIG ════ */
+    .config-card{max-width:560px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:34px 32px;position:relative;overflow:hidden;box-shadow:var(--sh)}
+    .config-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--black),var(--red),var(--navy),var(--green))}
+    .config-field{margin-bottom:18px}
+    .config-field label{display:block;font-size:.84rem;font-weight:600;color:rgba(255,255,255,.72);margin-bottom:7px}
+    .config-field input{width:100%;padding:11px 14px;background:var(--ibg);border:1px solid var(--iborder);border-radius:10px;color:#fff;font-family:'Cairo',sans-serif;font-size:.88rem;outline:none;direction:ltr;transition:all .25s}
+    .config-field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,.13)}
+    .config-field input::placeholder{color:rgba(255,255,255,.25)}
+    .btn-save-cfg{padding:12px 36px;background:linear-gradient(135deg,var(--navy),#0d0d40);color:#fff;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .3s;box-shadow:0 4px 16px rgba(26,26,94,.5)}
+    .btn-save-cfg:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(26,26,94,.65)}
+    .cfg-status{margin-top:12px;font-size:.82rem;padding:8px 16px;border-radius:8px;display:none}
+    .cfg-status.ok{background:rgba(26,107,47,.2);color:#66bb6a;border:1px solid rgba(102,187,106,.3);display:block}
+    .cfg-status.err{background:rgba(192,39,45,.2);color:#ef5350;border:1px solid rgba(239,83,80,.3);display:block}
+    .config-steps{background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);border-radius:12px;padding:16px 18px;margin-bottom:22px}
+    .config-steps h4{font-size:.84rem;color:var(--gold);margin-bottom:8px}
+    .config-steps ol{padding-right:16px;font-size:.78rem;color:rgba(255,255,255,.5);line-height:2}
+    .config-steps a{color:var(--gold);text-decoration:none}
+    /* Password change */
+    .pw-card{max-width:460px;background:rgba(192,39,45,.06);border:1px solid rgba(192,39,45,.2);border-radius:14px;padding:22px 24px;margin-top:24px}
+    .pw-card h3{font-size:.92rem;color:#ef9a9a;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+    /* Toast */
+    #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:linear-gradient(135deg,#1a6b2f,#0d3d1a);color:#fff;padding:12px 28px;border-radius:50px;font-size:.88rem;font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.5);z-index:999;transition:transform .4s cubic-bezier(.175,.885,.32,1.275)}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+    #toast.error{background:linear-gradient(135deg,#8b1a1d,#5d0f0f)}
+
+    .loader{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .db-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:50px;font-size:.74rem;font-weight:600}
+    .db-ok{background:rgba(26,107,47,.2);color:#66bb6a;border:1px solid rgba(102,187,106,.28)}
+    .db-off{background:rgba(212,168,67,.12);color:var(--gold);border:1px solid var(--border)}
+
+    @media(max-width:900px){.stats-grid{grid-template-columns:1fr 1fr}.charts-row,.charts-row2{grid-template-columns:1fr}}
+    @media(max-width:680px){.sidebar{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto}.sidebar-brand{display:none}.sidebar-nav{display:flex;padding:8px}.nav-item{flex-direction:column;gap:3px;padding:8px 10px;font-size:.7rem;min-width:60px}.sidebar-footer{display:none}.main-content{margin-right:0}}
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+
+  <!-- ════ LOGIN PAGE ════ -->
+  <div id="page-login">
+    <div class="login-bg-glow"></div>
+    <div class="login-card">
+      <div class="login-logos">
+        <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM (1).jpeg" alt="" class="login-logo"/>
+        <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM.jpeg"     alt="" class="login-logo"/>
+        <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM (2).jpeg" alt="" class="login-logo"/>
+      </div>
+      <div class="login-title">
+        <h1>🔐 لوحة الإدارة</h1>
+        <p>الجبهة الشعبية المتحدة UPF – دخول المشرفين فقط</p>
+      </div>
+      <div class="login-divider"></div>
+      <div class="login-field">
+        <label>👤 اسم المستخدم</label>
+        <input type="text" id="loginUser" placeholder="أدخل اسم المستخدم" autocomplete="username"/>
+      </div>
+      <div class="login-field">
+        <label>🔒 كلمة المرور</label>
+        <div class="toggle-pw">
+          <input type="password" id="loginPass" placeholder="أدخل كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+          <button class="toggle-eye" type="button" onclick="togglePw()" id="eyeBtn">👁</button>
+        </div>
+      </div>
+      <button class="btn-login" onclick="doLogin()">🔓 &nbsp; دخول</button>
+      <div class="login-err" id="loginErr">❌ اسم المستخدم أو كلمة المرور غير صحيحة</div>
+      <div class="login-hint">هذه الصفحة مخصصة للمشرفين فقط</div>
+    </div>
+  </div>
+
+  <!-- ════ ADMIN SHELL ════ -->
+  <div id="admin-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM.jpeg" alt="UPF"/>
+        <div class="brand-text">لوحة الإدارة – UPF</div>
+        <div class="brand-sub">المجلس التنفيذي – جامعة زالنجي</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-item active" onclick="showSection('sec-dash')" id="nav-dash">
+          <span class="nav-icon">📊</span> الداشبورد
+        </div>
+        <div class="nav-item" onclick="showSection('sec-members')" id="nav-members">
+          <span class="nav-icon">👥</span> الأعضاء
+        </div>
+        <div class="nav-item" onclick="showSection('sec-config')" id="nav-config">
+          <span class="nav-icon">⚙️</span> إعدادات Supabase
+        </div>
+        <div class="nav-item" onclick="showSection('sec-pw')" id="nav-pw">
+          <span class="nav-icon">🔑</span> تغيير كلمة المرور
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:10px 0"/>
+        <a class="nav-item" href="index.html" target="_blank">
+          <span class="nav-icon">📝</span> الاستمارة العامة
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-bottom:8px">مسجّل دخول كـ: <strong id="loggedUser" style="color:var(--gold)"></strong></div>
+        <button class="btn-logout" onclick="doLogout()">🚪 تسجيل الخروج</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="page-section active" id="sec-dash">
+        <div class="section-header">
+          <h2>📊 <span>الداشبورد</span> – إحصائيات العضوية</h2>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap">
+            <span class="db-badge db-off" id="dbBadge">⏳ جاري التحقق...</span>
+            <button onclick="loadDashboard()" style="background:rgba(212,168,67,.1);border:1px solid var(--border);color:var(--gold);border-radius:50px;padding:6px 18px;font-family:'Cairo',sans-serif;font-size:.78rem;cursor:pointer;transition:all .3s" onmouseover="this.style.background='rgba(212,168,67,.2)'" onmouseout="this.style.background='rgba(212,168,67,.1)'">🔄 تحديث</button>
+            <span style="font-size:.74rem;color:rgba(255,255,255,.3)">آخر تحديث: <span id="lastRef">—</span></span>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card total"><div class="stat-icon">👥</div><div class="stat-val" id="st-total">—</div><div class="stat-label">إجمالي الأعضاء</div></div>
+          <div class="stat-card active"><div class="stat-icon">✅</div><div class="stat-val" id="st-active">—</div><div class="stat-label">نشطون</div></div>
+          <div class="stat-card inactive"><div class="stat-icon">⛔</div><div class="stat-val" id="st-inactive">—</div><div class="stat-label">غير نشطين</div></div>
+          <div class="stat-card pending"><div class="stat-icon">⏳</div><div class="stat-val" id="st-pending">—</div><div class="stat-label">قيد المراجعة</div></div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-card"><div class="chart-title">📍 الأعضاء حسب الولاية</div><div class="chart-wrap"><canvas id="chartState"></canvas></div></div>
+          <div class="chart-card"><div class="chart-title">🔵 توزيع حالة العضوية</div><div class="chart-wrap"><canvas id="chartStatus"></canvas></div></div>
+        </div>
+        <div class="charts-row2">
+          <div class="chart-card"><div class="chart-title">📅 التسجيلات الشهرية</div><div class="chart-wrap"><canvas id="chartMonthly"></canvas></div></div>
+          <div class="chart-card"><div class="chart-title">🏅 الصفة التنظيمية</div><div class="chart-wrap"><canvas id="chartRole"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- ── MEMBERS TABLE ── -->
+      <div class="page-section" id="sec-members">
+        <div class="section-header">
+          <h2>👥 <span>قائمة الأعضاء</span></h2>
+          <p>جميع الأعضاء المسجلين في قاعدة البيانات</p>
+        </div>
+        <div class="table-card">
+          <div class="table-topbar">
+            <div class="table-title-label">📋 السجلات <span id="tCount" style="color:rgba(255,255,255,.45);font-weight:400"></span></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <input class="search-input" type="text" id="searchInput" placeholder="🔍 ابحث باسم أو ولاية..." oninput="filterTable()"/>
+              <select class="filter-sel" id="filterStatus" onchange="filterTable()">
+                <option value="">كل الحالات</option><option value="active">نشط</option><option value="inactive">غير نشط</option><option value="pending">قيد المراجعة</option>
+              </select>
+              <button onclick="loadDashboard()" style="background:rgba(212,168,67,.1);border:1px solid var(--border);color:var(--gold);border-radius:50px;padding:6px 16px;font-family:'Cairo',sans-serif;font-size:.78rem;cursor:pointer">🔄 تحديث</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>الصورة</th><th>الاسم</th><th>تاريخ الميلاد</th><th>الولاية</th><th>الإقليم</th><th>الهاتف</th><th>الصفة</th><th>القطاع الحالي</th><th>الحالة</th><th>تاريخ الانضمام</th><th>الملاحظات</th><th>حذف</th></tr></thead>
+              <tbody id="membersTbody"></tbody>
+            </table>
+            <div class="empty-state" id="emptyState" style="display:none"><div style="font-size:2.5rem;margin-bottom:10px">🗄️</div>لا توجد سجلات بعد.</div>
+            <div class="loading-state" id="loadingState"><span class="loader"></span><div style="margin-top:10px">جاري تحميل البيانات...</div></div>
+          </div>
+          <div class="table-footer"><span id="tableCount">—</span><span>آخر تحديث: <span id="lastRefTable">—</span></span></div>
+        </div>
+      </div>
+
+      <!-- ── CONFIG ── -->
+      <div class="page-section" id="sec-config">
+        <div class="section-header">
+          <h2>⚙️ <span>إعدادات Supabase</span> – PostgreSQL</h2>
+          <p>اربط النظام بقاعدة بيانات Supabase</p>
+        </div>
+        <div class="config-card">
+          <div class="config-steps">
+            <h4>📋 خطوات الإعداد</h4>
+            <ol>
+              <li>أنشئ مشروعًا مجانيًا على <a href="https://supabase.com" target="_blank">supabase.com</a></li>
+              <li>افتح محرر SQL وشغّل ملف <strong>schema.sql</strong> الموجود في مجلد المشروع</li>
+              <li>اذهب لـ Settings → API وانسخ الـ URL والـ anon key</li>
+              <li>الصقهما أدناه واضغط حفظ</li>
+            </ol>
+          </div>
+          <div class="config-field">
+            <label>🔗 Project URL</label>
+            <input type="text" id="cfg_url" placeholder="https://xxxxxxxxxxx.supabase.co"/>
+          </div>
+          <div class="config-field">
+            <label>🔑 Anon / Public Key</label>
+            <input type="text" id="cfg_key" placeholder="eyJhbGci..."/>
+          </div>
+          <button class="btn-save-cfg" onclick="saveConfig()">💾 حفظ وتفعيل الاتصال</button>
+          <div class="cfg-status" id="cfgStatus"></div>
+        </div>
+      </div>
+
+      <!-- ── CHANGE PASSWORD ── -->
+      <div class="page-section" id="sec-pw">
+        <div class="section-header">
+          <h2>🔑 <span>تغيير كلمة المرور</span></h2>
+          <p>تغيير بيانات الدخول للوحة الإدارة</p>
+        </div>
+        <div class="config-card" style="max-width:460px">
+          <div class="config-field">
+            <label>👤 اسم المستخدم الجديد</label>
+            <input type="text" id="new_user" placeholder="اسم المستخدم" dir="ltr"/>
+          </div>
+          <div class="config-field">
+            <label>🔒 كلمة المرور الجديدة</label>
+            <input type="password" id="new_pass" placeholder="كلمة المرور الجديدة" dir="ltr"/>
+          </div>
+          <div class="config-field">
+            <label>🔒 تأكيد كلمة المرور</label>
+            <input type="password" id="new_pass2" placeholder="أعد كتابة كلمة المرور" dir="ltr"/>
+          </div>
+          <button class="btn-save-cfg" onclick="changePw()">💾 حفظ بيانات الدخول</button>
+          <div class="cfg-status" id="pwStatus"></div>
+          <div style="margin-top:16px;font-size:.74rem;color:rgba(255,255,255,.3);line-height:1.7">
+            ⚠️ البيانات الافتراضية: اسم المستخدم <strong style="color:var(--gold)">admin</strong> وكلمة المرور <strong style="color:var(--gold)">upf@2026</strong><br/>
+            يُنصح بتغييرها فور أول دخول.
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="toast"></div>
+
+  <!-- Photo Modal -->
+  <div id="photoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(5px)" onclick="closePhotoModal()">
+    <div style="position:relative;max-width:90%;max-height:90%;text-align:center" onclick="event.stopPropagation()">
+      <img id="modalImg" src="" style="max-width:100%;max-height:80vh;border-radius:12px;border:2px solid var(--gold);box-shadow:0 10px 40px rgba(0,0,0,.8)"/>
+      <div id="modalCaption" style="margin-top:12px;font-size:1rem;color:#fff;font-weight:700"></div>
+      <button onclick="closePhotoModal()" style="position:absolute;top:-15px;right:-15px;background:var(--red);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-weight:bold;cursor:pointer;font-size:1.1rem;line-height:34px;box-shadow:0 2px 10px rgba(0,0,0,.5)">✕</button>
+    </div>
+  </div>
+
+  <script>
+    // ════ PARTICLES ════
+    (function(){
+      var C = ['rgba(192,39,45,.4)','rgba(212,168,67,.4)','rgba(26,107,47,.4)','rgba(26,26,94,.6)'];
+      var el = document.getElementById('particles');
+      for(var i=0; i<18; i++){
+        var d = document.createElement('div');
+        d.className = 'particle';
+        var s = Math.random() * 5 + 2;
+        d.style.cssText = 'width:'+s+'px;height:'+s+'px;background:'+C[Math.floor(Math.random()*C.length)]+';left:'+Math.random()*100+'%;animation-duration:'+(Math.random()*22+14)+'s;animation-delay:'+(Math.random()*12)+'s';
+        el.appendChild(d);
+      }
+    })();
+
+    // ════ AUTHENTICATION ════
+    function getAdminCredentials() {
+      return {
+        user: localStorage.getItem('admin_user') || 'admin',
+        pass: localStorage.getItem('admin_pass') || 'upf@2026'
+      };
+    }
+
+    function doLogin() {
+      var u = document.getElementById('loginUser').value.trim();
+      var p = document.getElementById('loginPass').value;
+      var err = document.getElementById('loginErr');
+      var creds = getAdminCredentials();
+
+      if (u === creds.user && p === creds.pass) {
+        err.classList.remove('show');
+        sessionStorage.setItem('upf_admin_logged', '1');
+        sessionStorage.setItem('upf_admin_user', u);
+        enterAdmin(u);
+      } else {
+        err.classList.add('show');
+        setTimeout(function(){ err.classList.remove('show'); }, 3000);
+      }
+    }
+
+    function doLogout() {
+      sessionStorage.removeItem('upf_admin_logged');
+      sessionStorage.removeItem('upf_admin_user');
+      document.getElementById('admin-shell').style.display = 'none';
+      document.getElementById('page-login').style.display = 'flex';
+      document.getElementById('loginPass').value = '';
+    }
+
+    function togglePw() {
+      var inp = document.getElementById('loginPass');
+      var btn = document.getElementById('eyeBtn');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.textContent = '🔒';
+      } else {
+        inp.type = 'password';
+        btn.textContent = '👁';
+      }
+    }
+
+    function enterAdmin(userName) {
+      document.getElementById('page-login').style.display = 'none';
+      document.getElementById('admin-shell').style.display = 'flex';
+      document.getElementById('loggedUser').textContent = userName || 'المشرف';
+      
+      // Load stored config values into form inputs
+      document.getElementById('cfg_url').value = localStorage.getItem('sb_url') || '';
+      document.getElementById('cfg_key').value = localStorage.getItem('sb_key') || '';
+      document.getElementById('new_user').value = getAdminCredentials().user;
+
+      initSupabase();
+      loadDashboard();
+    }
+
+    // ════ NAVIGATION ════
+    function showSection(secId) {
+      document.querySelectorAll('.page-section').forEach(function(s){ s.classList.remove('active'); });
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(function(n){ n.classList.remove('active'); });
+      
+      var sec = document.getElementById(secId);
+      if (sec) sec.classList.add('active');
+      
+      var nav = document.getElementById(secId.replace('sec-', 'nav-'));
+      if (nav) nav.classList.add('active');
+
+      if (secId === 'sec-dash' && Object.keys(charts).length === 0) {
+        renderCharts(allMembersData);
+      }
+    }
+
+    // ════ SUPABASE CLIENT ════
+    var supabase = null;
+    function initSupabase() {
+      var url = localStorage.getItem('sb_url');
+      var key = localStorage.getItem('sb_key');
+      if (url && key && window.supabase) {
+        try {
+          supabase = window.supabase.createClient(url, key);
+          return true;
+        } catch(e) {
+          supabase = null;
+          return false;
+        }
+      }
+      supabase = null;
+      return false;
+    }
+
+    async function saveConfig() {
+      var url = document.getElementById('cfg_url').value.trim();
+      var key = document.getElementById('cfg_key').value.trim();
+      var st = document.getElementById('cfgStatus');
+
+      if (!url || !key) {
+        st.className = 'cfg-status err';
+        st.textContent = '❌ يرجى إدخال رابط المشروع والمفتاح (URL و Key).';
+        return;
+      }
+
+      st.className = 'cfg-status';
+      st.style.display = 'block';
+      st.innerHTML = '<span class="loader"></span> جاري اختبار الاتصال بقاعدة البيانات...';
+
+      try {
+        var testClient = window.supabase.createClient(url, key);
+        var res = await testClient.from('members').select('id', { count: 'exact', head: true });
+        if (res.error) throw res.error;
+
+        localStorage.setItem('sb_url', url);
+        localStorage.setItem('sb_key', key);
+        supabase = testClient;
+
+        st.className = 'cfg-status ok';
+        st.textContent = '✅ تم الاتصال بنجاح بقاعدة بيانات Supabase (PostgreSQL)! تم حفظ الإعدادات.';
+        showToast('✅ تم حفظ إعدادات Supabase بنجاح');
+        updateBadge(true);
+        loadDashboard();
+      } catch (err) {
+        st.className = 'cfg-status err';
+        st.textContent = '⚠️ فشل الاتصال: ' + (err.message || 'تأكد من صحة المفاتيح وتشغيل schema.sql في Supabase');
+        showToast('⚠️ تعذر الاتصال بـ Supabase', true);
+      }
+    }
+
+    function updateBadge(isOk) {
+      var b = document.getElementById('dbBadge');
+      if (isOk) {
+        b.className = 'db-badge db-ok';
+        b.textContent = '🟢 متصل بـ Supabase (PostgreSQL)';
+      } else {
+        b.className = 'db-badge db-off';
+        b.textContent = '💾 وضع التخزين المحلي (غير متصل بـ DB)';
+      }
+    }
+
+    // ════ CHANGE PASSWORD ════
+    function changePw() {
+      var u = document.getElementById('new_user').value.trim();
+      var p1 = document.getElementById('new_pass').value;
+      var p2 = document.getElementById('new_pass2').value;
+      var st = document.getElementById('pwStatus');
+
+      if (!u) {
+        st.className = 'cfg-status err';
+        st.textContent = '❌ اسم المستخدم مطلوب.';
+        return;
+      }
+      if (!p1 || p1.length < 4) {
+        st.className = 'cfg-status err';
+        st.textContent = '❌ يجب أن تكون كلمة المرور 4 أحرف أو أرقام على الأقل.';
+        return;
+      }
+      if (p1 !== p2) {
+        st.className = 'cfg-status err';
+        st.textContent = '❌ كلمتا المرور غير متطابقتين!';
+        return;
+      }
+
+      localStorage.setItem('admin_user', u);
+      localStorage.setItem('admin_pass', p1);
+      sessionStorage.setItem('upf_admin_user', u);
+      document.getElementById('loggedUser').textContent = u;
+
+      st.className = 'cfg-status ok';
+      st.textContent = '✅ تم حفظ اسم المستخدم وكلمة المرور الجديدة بنجاح!';
+      showToast('✅ تم تغيير بيانات الدخول بنجاح');
+      document.getElementById('new_pass').value = '';
+      document.getElementById('new_pass2').value = '';
+    }
+
+    // ════ DATA LOADING & CHARTS ════
+    var allMembersData = [];
+    var charts = {};
+
+    async function loadDashboard() {
+      var loadingEl = document.getElementById('loadingState');
+      var emptyEl = document.getElementById('emptyState');
+      var tbody = document.getElementById('membersTbody');
+      
+      loadingEl.style.display = 'block';
+      emptyEl.style.display = 'none';
+      tbody.innerHTML = '';
+
+      var isDbConnected = false;
+      var data = [];
+
+      if (supabase) {
+        try {
+          var res = await supabase.from('members').select('*').order('created_at', { ascending: false });
+          if (!res.error && res.data) {
+            data = res.data;
+            isDbConnected = true;
+          } else {
+            console.warn('Supabase fetch error, fallback to local', res.error);
+          }
+        } catch(e) {
+          console.warn('Supabase error', e);
+        }
+      }
+
+      if (!isDbConnected) {
+        // Fallback to local storage
+        try {
+          data = JSON.parse(localStorage.getItem('upf_local') || '[]');
+        } catch(e) {
+          data = [];
+        }
+      }
+
+      allMembersData = data;
+      loadingEl.style.display = 'none';
+      updateBadge(isDbConnected);
+
+      var timeStr = new Date().toLocaleTimeString('ar-SD', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('lastRef').textContent = timeStr;
+      document.getElementById('lastRefTable').textContent = timeStr;
+
+      renderStats(data);
+      renderCharts(data);
+      renderTable(data);
+    }
+
+    function renderStats(data) {
+      var total = data.length;
+      var active = data.filter(function(m){ return (m.membership_status || 'active').toLowerCase() === 'active'; }).length;
+      var inactive = data.filter(function(m){ return (m.membership_status || '').toLowerCase() === 'inactive'; }).length;
+      var pending = data.filter(function(m){ return (m.membership_status || '').toLowerCase() === 'pending'; }).length;
+
+      document.getElementById('st-total').textContent = total;
+      document.getElementById('st-active').textContent = active;
+      document.getElementById('st-inactive').textContent = inactive;
+      document.getElementById('st-pending').textContent = pending;
+    }
+
+    function renderCharts(data) {
+      if (typeof Chart === 'undefined') return;
+
+      // 1. Chart by State
+      var stateCounts = {};
+      data.forEach(function(m){
+        var s = (m.state || 'غير محدد').trim();
+        stateCounts[s] = (stateCounts[s] || 0) + 1;
+      });
+      var stateLabels = Object.keys(stateCounts);
+      var stateVals = Object.values(stateCounts);
+      if (stateLabels.length === 0) { stateLabels = ['لا توجد بيانات']; stateVals = [0]; }
+
+      if (charts.state) charts.state.destroy();
+      charts.state = new Chart(document.getElementById('chartState'), {
+        type: 'bar',
+        data: {
+          labels: stateLabels,
+          datasets: [{
+            label: 'عدد الأعضاء',
+            data: stateVals,
+            backgroundColor: 'rgba(212,168,67,0.7)',
+            borderColor: '#d4a843',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: 'rgba(255,255,255,.7)', font: { family: 'Cairo' } }, grid: { display: false } },
+            y: { ticks: { color: 'rgba(255,255,255,.7)', font: { family: 'Cairo' }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,.05)' } }
+          }
+        }
+      });
+
+      // 2. Chart by Status
+      var activeCount = data.filter(function(m){ return (m.membership_status || 'active').toLowerCase() === 'active'; }).length;
+      var inactiveCount = data.filter(function(m){ return (m.membership_status || '').toLowerCase() === 'inactive'; }).length;
+      var pendingCount = data.filter(function(m){ return (m.membership_status || '').toLowerCase() === 'pending'; }).length;
+      if (data.length === 0) { activeCount = 0; inactiveCount = 0; pendingCount = 0; }
+
+      if (charts.status) charts.status.destroy();
+      charts.status = new Chart(document.getElementById('chartStatus'), {
+        type: 'doughnut',
+        data: {
+          labels: ['نشط', 'غير نشط', 'قيد المراجعة'],
+          datasets: [{
+            data: [activeCount, inactiveCount, pendingCount],
+            backgroundColor: ['#2e7d32', '#c62828', '#f57f17'],
+            borderColor: '#0a0a14',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,.8)', font: { family: 'Cairo' }, padding: 14 } }
+          }
+        }
+      });
+
+      // 3. Chart Monthly Registrations
+      var monthsMap = {};
+      data.forEach(function(m){
+        var d = m.created_at ? new Date(m.created_at) : new Date();
+        var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        monthsMap[key] = (monthsMap[key] || 0) + 1;
+      });
+      var monthKeys = Object.keys(monthsMap).sort();
+      var monthVals = monthKeys.map(function(k){ return monthsMap[k]; });
+      if (monthKeys.length === 0) { monthKeys = ['الشهر الحالي']; monthVals = [0]; }
+
+      if (charts.monthly) charts.monthly.destroy();
+      charts.monthly = new Chart(document.getElementById('chartMonthly'), {
+        type: 'line',
+        data: {
+          labels: monthKeys,
+          datasets: [{
+            label: 'التسجيلات',
+            data: monthVals,
+            borderColor: '#c0272d',
+            backgroundColor: 'rgba(192,39,45,.15)',
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#d4a843',
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: 'rgba(255,255,255,.7)', font: { family: 'Cairo' } }, grid: { display: false } },
+            y: { ticks: { color: 'rgba(255,255,255,.7)', font: { family: 'Cairo' }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,.05)' } }
+          }
+        }
+      });
+
+      // 4. Chart by Role
+      var roleCounts = {};
+      data.forEach(function(m){
+        var r = (m.organizational_role || 'عضو').trim();
+        roleCounts[r] = (roleCounts[r] || 0) + 1;
+      });
+      var roleLabels = Object.keys(roleCounts);
+      var roleVals = Object.values(roleCounts);
+      if (roleLabels.length === 0) { roleLabels = ['عضو']; roleVals = [0]; }
+
+      if (charts.role) charts.role.destroy();
+      charts.role = new Chart(document.getElementById('chartRole'), {
+        type: 'doughnut',
+        data: {
+          labels: roleLabels,
+          datasets: [{
+            data: roleVals,
+            backgroundColor: ['#1a1a5e', '#d4a843', '#1a6b2f', '#c0272d', '#6a1b9a', '#00838f'],
+            borderColor: '#0a0a14',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,.8)', font: { family: 'Cairo' }, padding: 10 } }
+          }
+        }
+      });
+    }
+
+    // ════ MEMBERS TABLE & FILTER ════
+    function renderTable(data) {
+      var tbody = document.getElementById('membersTbody');
+      var emptyEl = document.getElementById('emptyState');
+      tbody.innerHTML = '';
+
+      document.getElementById('tCount').textContent = '(' + data.length + ')';
+      document.getElementById('tableCount').textContent = 'إجمالي السجلات: ' + data.length;
+
+      if (!data || data.length === 0) {
+        emptyEl.style.display = 'block';
+        return;
+      }
+      emptyEl.style.display = 'none';
+
+      data.forEach(function(m, idx) {
+        var tr = document.createElement('tr');
+        
+        var photoHtml = '<span style="font-size:1.4rem">👤</span>';
+        if (m.photo_base64) {
+          photoHtml = '<img src="' + m.photo_base64 + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:1px solid var(--gold)" onclick="openPhotoModal(\'' + m.photo_base64 + '\', \'' + (m.full_name || '').replace(/'/g, "\\'") + '\')"/>';
+        }
+
+        var st = (m.membership_status || 'pending').toLowerCase();
+        var stBadge = '<span style="background:rgba(245,127,23,.2);color:#ffb74d;padding:2px 8px;border-radius:20px;font-size:.72rem">قيد المراجعة</span>';
+        if (st === 'active') stBadge = '<span style="background:rgba(46,125,50,.2);color:#81c784;padding:2px 8px;border-radius:20px;font-size:.72rem">نشط</span>';
+        if (st === 'inactive') stBadge = '<span style="background:rgba(198,40,40,.2);color:#e57373;padding:2px 8px;border-radius:20px;font-size:.72rem">غير نشط</span>';
+
+        tr.innerHTML = 
+          '<td>' + (idx + 1) + '</td>' +
+          '<td>' + photoHtml + '</td>' +
+          '<td><strong>' + (m.full_name || '—') + '</strong></td>' +
+          '<td>' + (m.date_of_birth || '—') + '</td>' +
+          '<td>' + (m.state || '—') + '</td>' +
+          '<td>' + (m.region || '—') + '</td>' +
+          '<td dir="ltr" style="text-align:right">' + (m.phone || '—') + '</td>' +
+          '<td>' + (m.organizational_role || '—') + '</td>' +
+          '<td>' + (m.current_sector || '—') + '</td>' +
+          '<td>' + stBadge + '</td>' +
+          '<td>' + (m.join_date || '—') + '</td>' +
+          '<td style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (m.notes || '') + '">' + (m.notes || '—') + '</td>' +
+          '<td><button onclick="deleteMember(\'' + (m.id || '') + '\')" style="background:rgba(192,39,45,.15);border:1px solid rgba(192,39,45,.4);color:#ef5350;border-radius:6px;padding:4px 9px;cursor:pointer;font-family:Cairo;font-size:.75rem">🗑️</button></td>';
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterTable() {
+      var q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      var stFilter = document.getElementById('filterStatus').value;
+
+      var filtered = allMembersData.filter(function(m){
+        var matchQ = true;
+        if (q) {
+          var name = (m.full_name || '').toLowerCase();
+          var state = (m.state || '').toLowerCase();
+          var phone = (m.phone || '').toLowerCase();
+          var role = (m.organizational_role || '').toLowerCase();
+          matchQ = name.includes(q) || state.includes(q) || phone.includes(q) || role.includes(q);
+        }
+        var matchSt = true;
+        if (stFilter) {
+          matchSt = (m.membership_status || 'pending').toLowerCase() === stFilter.toLowerCase();
+        }
+        return matchQ && matchSt;
+      });
+
+      renderTable(filtered);
+    }
+
+    async function deleteMember(id) {
+      if (!id) return;
+      if (!confirm('هل أنت متأكد من حذف هذا السجل نهائياً؟')) return;
+
+      var ok = false;
+      if (supabase && !id.startsWith('local-')) {
+        try {
+          var res = await supabase.from('members').delete().eq('id', id);
+          if (res.error) throw res.error;
+          ok = true;
+        } catch(e) {
+          alert('تعذر الحذف من قاعدة البيانات: ' + e.message);
+        }
+      }
+
+      // Also clean from localStorage if present
+      var localList = JSON.parse(localStorage.getItem('upf_local') || '[]');
+      var beforeLen = localList.length;
+      localList = localList.filter(function(m){ return m.id !== id; });
+      if (localList.length !== beforeLen) {
+        localStorage.setItem('upf_local', JSON.stringify(localList));
+        ok = true;
+      }
+
+      if (ok) {
+        showToast('🗑️ تم حذف السجل بنجاح');
+        loadDashboard();
+      }
+    }
+
+    // ════ PHOTO MODAL ════
+    function openPhotoModal(src, caption) {
+      document.getElementById('modalImg').src = src;
+      document.getElementById('modalCaption').textContent = caption || '';
+      document.getElementById('photoModal').style.display = 'flex';
+    }
+    function closePhotoModal() {
+      document.getElementById('photoModal').style.display = 'none';
+    }
+
+    // ════ TOAST ════
+    function showToast(msg, isErr) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = isErr ? 'error' : '';
+      t.classList.add('show');
+      setTimeout(function(){ t.classList.remove('show'); }, 3500);
+    }
+
+    // ════ INIT ON LOAD ════
+    window.addEventListener('DOMContentLoaded', function(){
+      if (sessionStorage.getItem('upf_admin_logged') === '1') {
+        enterAdmin(sessionStorage.getItem('upf_admin_user') || 'المشرف');
+      } else {
+        document.getElementById('loginUser').focus();
+      }
+    });
+  </script>
+</body>
+</html>

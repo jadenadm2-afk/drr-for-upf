@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>استمارة عضوية – الجبهة الشعبية المتحدة UPF</title>
+  <meta name="description" content="استمارة تسجيل عضوية حركة/جيش تحرير السودان – الجبهة الشعبية المتحدة UPF"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--black:#0d0d0d;--red:#c0272d;--navy:#1a1a5e;--green:#1a6b2f;--gold:#d4a843;--bg:#0f0f1a;--card:rgba(255,255,255,0.05);--border:rgba(212,168,67,0.28);--ibg:rgba(255,255,255,0.06);--iborder:rgba(212,168,67,0.38);--sh:0 20px 50px rgba(0,0,0,0.55);}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Cairo',sans-serif;background:var(--bg);background-image:radial-gradient(ellipse at 15% 15%,rgba(192,39,45,.14) 0%,transparent 48%),radial-gradient(ellipse at 85% 85%,rgba(26,26,94,.18) 0%,transparent 48%),radial-gradient(ellipse at 50% 50%,rgba(26,107,47,.08) 0%,transparent 60%);min-height:100vh;color:#e8e8e8;overflow-x:hidden}
+    .page{display:none;min-height:100vh;animation:fadeIn .45s ease}
+    .page.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    .site-header{text-align:center;padding:40px 20px 28px;position:relative}
+    .site-header::after{content:'';display:block;width:60%;max-width:440px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:16px auto 0}
+    .logos-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:14px;flex-wrap:wrap}
+    .logo-img{width:80px;height:80px;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(212,168,67,.42));border-radius:50%;background:rgba(255,255,255,.05);padding:4px;transition:transform .3s}
+    .logo-img:hover{transform:scale(1.09) rotate(4deg)}
+    .header-motto{font-family:'Amiri',serif;font-size:.95rem;color:var(--gold);letter-spacing:2px;margin-bottom:6px}
+    .header-org{font-size:1.4rem;font-weight:800;color:#fff;line-height:1.4}
+    .header-org span{color:var(--gold)}
+    .header-sub{font-size:.83rem;color:rgba(255,255,255,.55);margin-top:4px}
+    /* INTRO */
+    .intro-body{max-width:760px;margin:0 auto;padding:0 20px 60px}
+    .steps-ribbon{display:flex;align-items:flex-start;justify-content:center;margin:22px 0 28px;flex-wrap:wrap}
+    .step-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:80px;position:relative}
+    .step-item:not(:last-child)::after{content:'';position:absolute;left:-50%;top:18px;width:100%;height:2px;background:linear-gradient(90deg,rgba(212,168,67,.45),rgba(212,168,67,.1));z-index:0}
+    .step-icon{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--red),#8b1a1d);display:flex;align-items:center;justify-content:center;font-size:1rem;position:relative;z-index:1;box-shadow:0 4px 12px rgba(192,39,45,.4)}
+    .step-label{font-size:.7rem;color:rgba(255,255,255,.6);text-align:center;line-height:1.3}
+    .greeting-card{background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--border);border-radius:22px;padding:40px 42px;position:relative;overflow:hidden;box-shadow:var(--sh)}
+    .greeting-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--black),var(--red),var(--navy),var(--green))}
+    .greeting-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(192,39,45,.15);border:1px solid rgba(192,39,45,.3);color:#ef9a9a;border-radius:50px;padding:5px 16px;font-size:.8rem;font-weight:600;margin-bottom:22px}
+    .greeting-badge .dot{width:7px;height:7px;background:#ef5350;border-radius:50%;animation:pulse 1.5s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+    .greeting-salute{font-family:'Amiri',serif;font-size:1.25rem;color:var(--gold);font-weight:700;margin-bottom:18px;line-height:1.5}
+    .greeting-text{font-size:.97rem;line-height:2.1;color:rgba(255,255,255,.82);text-align:justify}
+    .greeting-text p{margin-bottom:14px}
+    .greeting-highlight{color:var(--gold);font-weight:700}
+    .greeting-divider{width:60px;height:3px;background:linear-gradient(90deg,var(--red),var(--gold));border-radius:3px;margin:26px auto}
+    .greeting-signature{text-align:center;margin-top:24px}
+    .sig-fist{font-size:2.2rem;line-height:1;margin-bottom:7px;display:block}
+    .sig-name{font-family:'Amiri',serif;font-size:1.1rem;color:var(--gold);font-weight:700}
+    .sig-sub{font-size:.8rem;color:rgba(255,255,255,.5);margin-top:3px}
+    .cta-row{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:28px}
+    .btn-start{background:linear-gradient(135deg,var(--red),#8b1a1d);color:#fff;border:none;border-radius:50px;padding:16px 66px;font-family:'Cairo',sans-serif;font-size:1.05rem;font-weight:700;cursor:pointer;letter-spacing:1px;box-shadow:0 7px 24px rgba(192,39,45,.52);transition:all .3s;position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px}
+    .btn-start::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);transition:left .5s}
+    .btn-start:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(192,39,45,.62)}
+    .btn-start:hover::before{left:100%}
+    .cta-note{font-size:.78rem;color:rgba(255,255,255,.32)}
+    /* FORM */
+    .form-topbar{max-width:820px;margin:14px auto 12px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+    .btn-back{background:transparent;border:1px solid var(--border);color:rgba(255,255,255,.55);border-radius:50px;padding:7px 18px;font-family:'Cairo',sans-serif;font-size:.82rem;cursor:pointer;transition:all .28s;display:inline-flex;align-items:center;gap:6px}
+    .btn-back:hover{border-color:var(--gold);color:var(--gold)}
+    .form-badge{background:rgba(212,168,67,.1);border:1px solid var(--border);color:var(--gold);border-radius:50px;padding:5px 16px;font-size:.78rem;font-weight:600}
+    .form-card{max-width:820px;margin:0 auto 30px;background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid var(--border);border-radius:22px;padding:38px 34px 48px;box-shadow:var(--sh);position:relative;overflow:hidden}
+    .form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--black),var(--red),var(--navy),var(--green))}
+    .photo-section{display:flex;justify-content:center;margin-bottom:32px}
+    .photo-upload-wrapper{position:relative;width:130px;height:170px;cursor:pointer}
+    .photo-preview{width:130px;height:150px;border-radius:12px;border:2px dashed var(--gold);background:var(--ibg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:rgba(255,255,255,.45);font-size:.8rem;transition:all .28s;overflow:hidden;position:relative}
+    .photo-preview:hover{background:rgba(212,168,67,.08);color:var(--gold)}
+    .photo-preview.has-image{border-style:solid}
+    .photo-preview img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
+    .upload-icon{font-size:2.2rem;line-height:1}
+    .photo-label-text{text-align:center;line-height:1.4}
+    .photo-badge{position:absolute;bottom:0;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--black);font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+    .section-title{font-size:.95rem;font-weight:700;color:var(--gold);margin-bottom:16px;margin-top:28px;display:flex;align-items:center;gap:9px}
+    .section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 22px}
+    .full-width{grid-column:1/-1}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:.84rem;font-weight:600;color:rgba(255,255,255,.78);display:flex;align-items:center;gap:5px}
+    .num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:linear-gradient(135deg,var(--red),#8b1a1d);color:#fff;border-radius:50%;font-size:.68rem;font-weight:700;flex-shrink:0}
+    .field input,.field select,.field textarea{width:100%;padding:10px 13px;background:var(--ibg);border:1px solid var(--iborder);border-radius:9px;color:#fff;font-family:'Cairo',sans-serif;font-size:.88rem;transition:all .22s;outline:none;direction:rtl}
+    .field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,.28)}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);background:rgba(212,168,67,.06);box-shadow:0 0 0 3px rgba(212,168,67,.13)}
+    .field select option{background:#1a1a2e;color:#fff}
+    .field textarea{resize:vertical;min-height:85px}
+    .submit-row{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:36px}
+    .btn-submit{background:linear-gradient(135deg,var(--red),#8b1a1d);color:#fff;border:none;border-radius:50px;padding:14px 58px;font-family:'Cairo',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:1px;box-shadow:0 6px 22px rgba(192,39,45,.48);transition:all .3s;position:relative;overflow:hidden}
+    .btn-submit::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transition:left .5s}
+    .btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(192,39,45,.58)}
+    .btn-submit:hover::before{left:100%}
+    .btn-reset{background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.45);border-radius:50px;padding:9px 28px;font-family:'Cairo',sans-serif;font-size:.85rem;cursor:pointer;transition:all .3s}
+    .btn-reset:hover{border-color:var(--red);color:var(--red)}
+    .save-status{margin-top:10px;font-size:.82rem;padding:8px 18px;border-radius:8px;display:none;text-align:center}
+    .save-status.ok{background:rgba(26,107,47,.2);color:#66bb6a;border:1px solid rgba(102,187,106,.3);display:block}
+    .save-status.err{background:rgba(192,39,45,.2);color:#ef5350;border:1px solid rgba(239,83,80,.3);display:block}
+    .save-status.loading{background:rgba(212,168,67,.12);color:var(--gold);border:1px solid var(--border);display:block}
+    #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:linear-gradient(135deg,#1a6b2f,#0d3d1a);color:#fff;padding:13px 30px;border-radius:50px;font-size:.9rem;font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.5);z-index:999;transition:transform .4s cubic-bezier(.175,.885,.32,1.275)}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+    .loader{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+    .particle{position:absolute;border-radius:50%;animation:float linear infinite;opacity:0}
+    @keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:.5}90%{opacity:.15}100%{transform:translateY(-80px) rotate(720deg);opacity:0}}
+    @media(max-width:600px){.form-card{padding:22px 14px 36px}.form-grid{grid-template-columns:1fr}.full-width{grid-column:1}.header-org{font-size:1.1rem}.logo-img{width:62px;height:62px}.greeting-card{padding:26px 18px}.step-item:not(:last-child)::after{display:none}}
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+
+  <!-- PAGE: INTRO -->
+  <div class="page active" id="page-intro">
+    <header class="site-header">
+      <div class="logos-row">
+        <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM (1).jpeg" alt="شعار الحركة" class="logo-img"/>
+        <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM.jpeg"     alt="شعار الراية"  class="logo-img"/>
+        <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM (2).jpeg" alt="SLM/A"        class="logo-img"/>
+      </div>
+      <p class="header-motto">الحرية &nbsp;·&nbsp; العدل &nbsp;·&nbsp; السلام &nbsp;·&nbsp; الديمقراطية</p>
+      <h1 class="header-org">حركة / جيش تحرير السودان<br/><span>الجبهة الشعبية المتحدة UPF</span></h1>
+      <p class="header-sub">قيادة الرفيق / عبدالواحد محمد احمد النور &nbsp;|&nbsp; المجلس التنفيذي – جامعة زالنجي</p>
+    </header>
+    <div class="intro-body">
+      <div class="steps-ribbon">
+        <div class="step-item"><div class="step-icon">📋</div><div class="step-label">قراءة البيان</div></div>
+        <div class="step-item"><div class="step-icon">✍️</div><div class="step-label">تعبئة الاستمارة</div></div>
+        <div class="step-item"><div class="step-icon">📷</div><div class="step-label">رفع الصورة</div></div>
+        <div class="step-item"><div class="step-icon">🗄️</div><div class="step-label">حفظ في قاعدة البيانات</div></div>
+      </div>
+      <div class="greeting-card">
+        <div class="greeting-badge"><span class="dot"></span>استمارة عضوية – دورة تسجيل ٢٠٢٦</div>
+        <p class="greeting-salute">الرفاق والرفيقات الأعزاء،<br/>أعضاء الجبهة الشعبية المتحدة (UPF) – المجلس التنفيذي لجامعة زالنجي</p>
+        <div class="greeting-text">
+          <p>نرجو من جميع <span class="greeting-highlight">الرفاق والرفيقات</span> التكرم بتعبئة استمارة العضوية بدقة واهتمام، مع التأكد من صحة البيانات والمعلومات المقدمة.</p>
+          <p>تأتي هذه الخطوة في إطار <span class="greeting-highlight">حصر العضوية</span>، وتنظيم البيانات، وتحديث سجلات الرفاق والرفيقات، بما يسهم في تعزيز التواصل والتنسيق، وتطوير العمل التنظيمي داخل المجلس التنفيذي.</p>
+          <p>وعليه، نأمل من الجميع الالتزام بتعبئة الاستمارة واستكمال <span class="greeting-highlight">جميع البيانات المطلوبة</span>، تقديرًا لأهمية هذه الخطوة في ترسيخ العمل التنظيمي وتجويده.</p>
+          <p style="font-weight:600;color:rgba(255,255,255,.9)">معًا من أجل <span class="greeting-highlight">تنظيم أكثر فاعلية</span>، وعمل تنظيمي راسخ ومتطور.</p>
+        </div>
+        <div class="greeting-divider"></div>
+        <div class="greeting-signature">
+          <span class="sig-fist">✊</span>
+          <div class="sig-name">الجبهة الشعبية المتحدة (UPF)</div>
+          <div class="sig-sub">المجلس التنفيذي – جامعة زالنجي</div>
+        </div>
+      </div>
+      <div class="cta-row">
+        <button class="btn-start" onclick="showPage('page-form')">✍️ &nbsp; ابدأ تعبئة الاستمارة</button>
+        <p class="cta-note">البيانات تُحفظ مباشرة في قاعدة بيانات PostgreSQL</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: FORM -->
+  <div class="page" id="page-form">
+    <div class="form-topbar">
+      <button class="btn-back" onclick="showPage('page-intro')">&#8594; العودة للبيان</button>
+      <div class="form-badge">📝 تسجيل عضو جديد</div>
+    </div>
+    <form class="form-card" id="memberForm" novalidate>
+      <div class="photo-section">
+        <div class="photo-upload-wrapper" onclick="document.getElementById('memberPhotoInput').click()">
+          <div class="photo-preview" id="photoPreview">
+            <span class="upload-icon">📷</span>
+            <span class="photo-label-text">صورة العضو<br/><small>انقر للرفع</small></span>
+          </div>
+          <div class="photo-badge">صورة شخصية</div>
+        </div>
+        <input type="file" id="memberPhotoInput" accept="image/*" onchange="handlePhoto(event)" style="display:none"/>
+      </div>
+      <div class="section-title"><span>👤</span> البيانات الشخصية</div>
+      <div class="form-grid">
+        <div class="field full-width"><label><span class="num">1</span> الاسم الكامل</label><input type="text" id="f_name" placeholder="أدخل الاسم الرباعي" required/></div>
+        <div class="field"><label><span class="num">2</span> تاريخ الميلاد</label><input type="date" id="f_dob"/></div>
+        <div class="field"><label><span class="num">3</span> مكان الميلاد</label><input type="text" id="f_pob" placeholder="مكان الميلاد"/></div>
+        <div class="field full-width"><label><span class="num">4</span> مكان الإقامة الحالية</label><input type="text" id="f_residence" placeholder="العنوان التفصيلي"/></div>
+        <div class="field"><label><span class="num">5</span> الولاية</label><input type="text" id="f_state" placeholder="الولاية"/></div>
+        <div class="field"><label><span class="num">6</span> الإقليم</label><input type="text" id="f_region" placeholder="الإقليم"/></div>
+        <div class="field"><label><span class="num">7</span> المحلية / المقاطعة</label><input type="text" id="f_locality" placeholder="المحلية أو المقاطعة"/></div>
+        <div class="field"><label><span class="num">8</span> رقم الهاتف</label><input type="tel" id="f_phone" placeholder="+249 9XX XXX XXX" dir="ltr"/></div>
+        <div class="field full-width"><label><span class="num">9</span> البريد الإلكتروني</label><input type="email" id="f_email" placeholder="example@email.com" dir="ltr"/></div>
+      </div>
+      <div class="section-title"><span>🏛</span> البيانات التنظيمية</div>
+      <div class="form-grid">
+        <div class="field"><label><span class="num">10</span> الصفة التنظيمية</label>
+          <select id="f_role"><option value="">-- اختر الصفة --</option><option>عضو عادي</option><option>كادر تنظيمي</option><option>قيادي</option><option>مؤسس</option><option>مناصر</option></select></div>
+        <div class="field"><label><span class="num">11</span> تاريخ الانضمام</label><input type="date" id="f_joinDate"/></div>
+        <div class="field"><label><span class="num">12</span> القطاع – المجلس التنفيذي</label><input type="text" id="f_execSector" placeholder="قطاع المجلس التنفيذي"/></div>
+        <div class="field"><label><span class="num">13</span> القطاع الأول للعضو</label><input type="text" id="f_firstSector" placeholder="القطاع الأول"/></div>
+        <div class="field"><label><span class="num">14</span> القطاع الحالي</label><input type="text" id="f_currentSector" placeholder="القطاع الحالي"/></div>
+        <div class="field"><label><span class="num">15</span> حالة العضوية</label>
+          <select id="f_status"><option value="">-- اختر الحالة --</option><option value="active">نشط</option><option value="inactive">غير نشط</option><option value="pending">قيد المراجعة</option></select></div>
+        <div class="field"><label><span class="num">16</span> تاريخ آخر تحديث للسجل</label><input type="date" id="f_lastUpdate"/></div>
+        <div class="field full-width"><label><span class="num">17</span> الملاحظات التنظيمية والإدارية</label><textarea id="f_notes" placeholder="أي ملاحظات تنظيمية أو إدارية إضافية..."></textarea></div>
+      </div>
+      <div class="submit-row">
+        <button type="submit" class="btn-submit" id="submitBtn">✦ حفظ في قاعدة البيانات ✦</button>
+        <div class="save-status" id="saveStatus"></div>
+        <button type="button" class="btn-reset" onclick="resetForm()">مسح الاستمارة</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    // Particles
+    (function(){var C=['rgba(192,39,45,.4)','rgba(212,168,67,.4)','rgba(26,107,47,.4)','rgba(26,26,94,.6)'];var el=document.getElementById('particles');for(var i=0;i<16;i++){var d=document.createElement('div');d.className='particle';var s=Math.random()*5+2;d.style.cssText='width:'+s+'px;height:'+s+'px;background:'+C[Math.floor(Math.random()*C.length)]+';left:'+Math.random()*100+'%;animation-duration:'+(Math.random()*22+14)+'s;animation-delay:'+(Math.random()*12)+'s';el.appendChild(d);}})();
+
+    // Page switch
+    function showPage(id){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+
+    // Supabase init from shared storage
+    var supabase=null;
+    (function(){var url=localStorage.getItem('sb_url');var key=localStorage.getItem('sb_key');if(url&&key){try{supabase=window.supabase.createClient(url,key);}catch(e){supabase=null;}}})();
+
+    // Photo
+    var currentPhoto=null;
+    function handlePhoto(e){var f=e.target.files[0];if(!f)return;var img=new Image();var r=new FileReader();r.onload=function(ev){img.src=ev.target.result;img.onload=function(){var c=document.createElement('canvas');var M=400,w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M;}if(h>M){w=Math.round(w*M/h);h=M;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);currentPhoto=c.toDataURL('image/jpeg',.75);var p=document.getElementById('photoPreview');p.innerHTML='<img src="'+currentPhoto+'" alt="صورة"/>';p.classList.add('has-image');};};r.readAsDataURL(f);}
+
+    // Submit
+    document.getElementById('memberForm').addEventListener('submit',async function(e){
+      e.preventDefault();
+      var name=document.getElementById('f_name').value.trim();
+      if(!name){var el=document.getElementById('f_name');el.focus();el.style.borderColor='#ef5350';setTimeout(function(){el.style.borderColor='';},2200);return;}
+      var btn=document.getElementById('submitBtn');var st=document.getElementById('saveStatus');
+      btn.disabled=true;btn.innerHTML='<span class="loader"></span> جاري الحفظ...';
+      st.className='save-status loading';st.textContent='⏳ جاري الحفظ في PostgreSQL...';
+      var rec={full_name:name,date_of_birth:gv('f_dob')||null,place_of_birth:gv('f_pob')||null,current_residence:gv('f_residence')||null,state:gv('f_state')||null,region:gv('f_region')||null,locality:gv('f_locality')||null,phone:gv('f_phone')||null,email:gv('f_email')||null,photo_base64:currentPhoto||null,organizational_role:gv('f_role')||null,join_date:gv('f_joinDate')||null,executive_sector:gv('f_execSector')||null,first_sector:gv('f_firstSector')||null,current_sector:gv('f_currentSector')||null,membership_status:gv('f_status')||'pending',last_record_update:gv('f_lastUpdate')||null,notes:gv('f_notes')||null};
+      if(supabase){
+        try{var res=await supabase.from('members').insert([rec]);if(res.error)throw res.error;st.className='save-status ok';st.textContent='✅ تم الحفظ في PostgreSQL بنجاح!';showToast('✅ تم حفظ بيانات العضو!');resetForm();}
+        catch(err){saveLocal(rec);st.className='save-status err';st.textContent='⚠️ '+err.message+' — تم الحفظ محلياً كاحتياط';showToast('⚠️ حفظ محلي احتياطي');}
+      }else{saveLocal(rec);st.className='save-status ok';st.textContent='💾 تم الحفظ محلياً. لحفظ في PostgreSQL أعد ضبط Supabase من لوحة الإدارة.';showToast('💾 تم الحفظ محلياً');resetForm();}
+      btn.disabled=false;btn.innerHTML='✦ حفظ في قاعدة البيانات ✦';
+    });
+    function gv(id){return document.getElementById(id).value;}
+    function saveLocal(r){var a=JSON.parse(localStorage.getItem('upf_local')||'[]');r.id='local-'+Date.now();r.created_at=new Date().toISOString();a.push(r);localStorage.setItem('upf_local',JSON.stringify(a));}
+    function resetForm(){document.getElementById('memberForm').reset();currentPhoto=null;var p=document.getElementById('photoPreview');p.innerHTML='<span class="upload-icon">📷</span><span class="photo-label-text">صورة العضو<br/><small>انقر للرفع</small></span>';p.classList.remove('has-image');}
+    function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3500);}
+  </script>
+</body>
+</html>
