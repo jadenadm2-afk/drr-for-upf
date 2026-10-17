@@ -429,6 +429,25 @@
     })();
 
     // ════ AUTHENTICATION ════
+    // ════ SECURITY HELPERS ════
+    function authHeaders() {
+      var token = sessionStorage.getItem('upf_admin_token') || '';
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      };
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '—';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     // ════ AUTHENTICATION ════
     function getAdminCredentials() {
       return {
@@ -453,8 +472,13 @@
           err.classList.remove('show');
           sessionStorage.setItem('upf_admin_logged', '1');
           sessionStorage.setItem('upf_admin_user', data.user || u);
+          if (data.token) {
+            sessionStorage.setItem('upf_admin_token', data.token);
+          }
           enterAdmin(data.user || u);
           return;
+        } else {
+          err.textContent = '❌ ' + (data.error || 'اسم المستخدم أو كلمة المرور غير صحيحة');
         }
       } catch (e) {
         // Fallback for offline/local usage
@@ -469,12 +493,13 @@
       }
 
       err.classList.add('show');
-      setTimeout(function(){ err.classList.remove('show'); }, 3000);
+      setTimeout(function(){ err.classList.remove('show'); }, 3500);
     }
 
     function doLogout() {
       sessionStorage.removeItem('upf_admin_logged');
       sessionStorage.removeItem('upf_admin_user');
+      sessionStorage.removeItem('upf_admin_token');
       document.getElementById('admin-shell').style.display = 'none';
       document.getElementById('page-login').style.display = 'flex';
       document.getElementById('loginPass').value = '';
@@ -603,19 +628,22 @@
       try {
         var res = await fetch('/api/change-password', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders(),
           body: JSON.stringify({ new_user: u, new_pass: p1 })
         });
         var data = await res.json();
         if (res.ok && data.ok) {
+          if (data.token) {
+            sessionStorage.setItem('upf_admin_token', data.token);
+          }
           localStorage.setItem('admin_user', u);
           localStorage.setItem('admin_pass', p1);
           sessionStorage.setItem('upf_admin_user', u);
           document.getElementById('loggedUser').textContent = u;
 
           st.className = 'cfg-status ok';
-          st.textContent = '✅ تم تحديث اسم المستخدم وكلمة المرور في قاعدة البيانات بنجاح!';
-          showToast('✅ تم تغيير بيانات الدخول بنجاح');
+          st.textContent = '✅ تم تحديث وتشفير بيانات الدخول في قاعدة البيانات بنجاح!';
+          showToast('✅ تم تغيير كلمة المرور بأمان');
           document.getElementById('new_pass').value = '';
           document.getElementById('new_pass2').value = '';
           return;
@@ -651,7 +679,14 @@
 
       var data = [];
       try {
-        var res = await fetch('/api/members');
+        var res = await fetch('/api/members', {
+          headers: authHeaders()
+        });
+        if (res.status === 401) {
+          doLogout();
+          showToast('⚠️ انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً', true);
+          return;
+        }
         var json = await res.json();
         if (res.ok && json.ok) {
           data = json.data || [];
@@ -844,9 +879,10 @@
       data.forEach(function(m, idx) {
         var tr = document.createElement('tr');
         
+        var safeName = escapeHtml(m.full_name);
         var photoHtml = '<span style="font-size:1.4rem">👤</span>';
-        if (m.photo_base64) {
-          photoHtml = '<img src="' + m.photo_base64 + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:1px solid var(--gold)" onclick="openPhotoModal(\'' + m.photo_base64 + '\', \'' + (m.full_name || '').replace(/'/g, "\\'") + '\')"/>';
+        if (m.photo_base64 && m.photo_base64.startsWith('data:image/')) {
+          photoHtml = '<img src="' + m.photo_base64 + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:1px solid var(--gold)" onclick="openPhotoModal(\'' + m.photo_base64 + '\', \'' + safeName.replace(/'/g, "\\'") + '\')"/>';
         }
 
         var st = (m.membership_status || 'pending').toLowerCase();
@@ -857,16 +893,16 @@
         tr.innerHTML = 
           '<td>' + (idx + 1) + '</td>' +
           '<td>' + photoHtml + '</td>' +
-          '<td><strong>' + (m.full_name || '—') + '</strong></td>' +
-          '<td>' + (m.date_of_birth || '—') + '</td>' +
-          '<td>' + (m.state || '—') + '</td>' +
-          '<td>' + (m.region || '—') + '</td>' +
-          '<td dir="ltr" style="text-align:right">' + (m.phone || '—') + '</td>' +
-          '<td>' + (m.organizational_role || '—') + '</td>' +
-          '<td>' + (m.current_sector || '—') + '</td>' +
+          '<td><strong>' + safeName + '</strong></td>' +
+          '<td>' + escapeHtml(m.date_of_birth) + '</td>' +
+          '<td>' + escapeHtml(m.state) + '</td>' +
+          '<td>' + escapeHtml(m.region) + '</td>' +
+          '<td dir="ltr" style="text-align:right">' + escapeHtml(m.phone) + '</td>' +
+          '<td>' + escapeHtml(m.organizational_role) + '</td>' +
+          '<td>' + escapeHtml(m.current_sector) + '</td>' +
           '<td>' + stBadge + '</td>' +
-          '<td>' + (m.join_date || '—') + '</td>' +
-          '<td style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (m.notes || '') + '">' + (m.notes || '—') + '</td>' +
+          '<td>' + escapeHtml(m.join_date) + '</td>' +
+          '<td style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + escapeHtml(m.notes) + '">' + escapeHtml(m.notes) + '</td>' +
           '<td><button onclick="deleteMember(\'' + (m.id || '') + '\')" style="background:rgba(192,39,45,.15);border:1px solid rgba(192,39,45,.4);color:#ef5350;border-radius:6px;padding:4px 9px;cursor:pointer;font-family:Cairo;font-size:.75rem">🗑️</button></td>';
 
         tbody.appendChild(tr);
@@ -902,7 +938,15 @@
 
       var ok = false;
       try {
-        var res = await fetch('/api/members/' + id, { method: 'DELETE' });
+        var res = await fetch('/api/members/' + id, {
+          method: 'DELETE',
+          headers: authHeaders()
+        });
+        if (res.status === 401) {
+          doLogout();
+          showToast('⚠️ انتهت صلاحية الجلسة، يرجى إعادة تسجيل الدخول', true);
+          return;
+        }
         var data = await res.json();
         if (res.ok && data.ok) {
           ok = true;
