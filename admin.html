@@ -7,7 +7,6 @@
   <meta name="robots" content="noindex,nofollow"/>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{--black:#0d0d0d;--red:#c0272d;--navy:#1a1a5e;--green:#1a6b2f;--gold:#d4a843;--bg:#0a0a14;--card:rgba(255,255,255,0.05);--border:rgba(212,168,67,0.28);--ibg:rgba(255,255,255,0.06);--iborder:rgba(212,168,67,0.38);--sh:0 20px 50px rgba(0,0,0,0.55);}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -206,7 +205,7 @@
           <span class="nav-icon">👥</span> الأعضاء
         </div>
         <div class="nav-item" onclick="showSection('sec-config')" id="nav-config">
-          <span class="nav-icon">⚙️</span> إعدادات Supabase
+          <span class="nav-icon">🗄️</span> قاعدة بيانات PostgreSQL
         </div>
         <div class="nav-item" onclick="showSection('sec-pw')" id="nav-pw">
           <span class="nav-icon">🔑</span> تغيير كلمة المرور
@@ -280,32 +279,32 @@
         </div>
       </div>
 
-      <!-- ── CONFIG ── -->
+      <!-- ── DATABASE STATUS (PostgreSQL) ── -->
       <div class="page-section" id="sec-config">
         <div class="section-header">
-          <h2>⚙️ <span>إعدادات Supabase</span> – PostgreSQL</h2>
-          <p>اربط النظام بقاعدة بيانات Supabase</p>
+          <h2>🗄️ <span>قاعدة بيانات PostgreSQL</span> – Sequelize</h2>
+          <p>معلومات الاتصال المباشر بقاعدة البيانات بدون أي وسيط خارجي</p>
         </div>
         <div class="config-card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+            <span style="font-size:2.4rem">🐘</span>
+            <div>
+              <h3 style="font-size:1.1rem;color:var(--gold)">PostgreSQL Engine (Sequelize ORM)</h3>
+              <p style="font-size:.8rem;color:rgba(255,255,255,.5)">ربط أصلي مباشر مع السيرفر</p>
+            </div>
+          </div>
           <div class="config-steps">
-            <h4>📋 خطوات الإعداد</h4>
+            <h4>💡 كيف تعمل قاعدة البيانات على Railway؟</h4>
             <ol>
-              <li>أنشئ مشروعًا مجانيًا على <a href="https://supabase.com" target="_blank">supabase.com</a></li>
-              <li>افتح محرر SQL وشغّل ملف <strong>schema.sql</strong> الموجود في مجلد المشروع</li>
-              <li>اذهب لـ Settings → API وانسخ الـ URL والـ anon key</li>
-              <li>الصقهما أدناه واضغط حفظ</li>
+              <li>في لوحة مشروعك على Railway، اضغط <strong>+ New</strong> ➔ <strong>Database</strong> ➔ <strong>Add PostgreSQL</strong>.</li>
+              <li>يقوم Railway بربط قاعدة البيانات تلقائياً وتمرير متغير الاتصال <code>DATABASE_URL</code>.</li>
+              <li>يقوم محرك Sequelize بإنشاء الجداول وحقول الاستمارة الـ 17 تلقائياً بدون الحاجة لتشغيل أي أوامر يدوية!</li>
             </ol>
           </div>
-          <div class="config-field">
-            <label>🔗 Project URL</label>
-            <input type="text" id="cfg_url" placeholder="https://xxxxxxxxxxx.supabase.co"/>
+          <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:16px;font-size:.85rem;line-height:2" id="dbDetailsText">
+            ⏳ جاري فحص حالة الاتصال بقاعدة البيانات...
           </div>
-          <div class="config-field">
-            <label>🔑 Anon / Public Key</label>
-            <input type="text" id="cfg_key" placeholder="eyJhbGci..."/>
-          </div>
-          <button class="btn-save-cfg" onclick="saveConfig()">💾 حفظ وتفعيل الاتصال</button>
-          <div class="cfg-status" id="cfgStatus"></div>
+          <button class="btn-save-cfg" onclick="checkDbStatus()" style="margin-top:18px">🔄 فحص الاتصال الآن</button>
         </div>
       </div>
 
@@ -366,6 +365,7 @@
     })();
 
     // ════ AUTHENTICATION ════
+    // ════ AUTHENTICATION ════
     function getAdminCredentials() {
       return {
         user: localStorage.getItem('admin_user') || 'admin',
@@ -373,21 +373,39 @@
       };
     }
 
-    function doLogin() {
+    async function doLogin() {
       var u = document.getElementById('loginUser').value.trim();
       var p = document.getElementById('loginPass').value;
       var err = document.getElementById('loginErr');
-      var creds = getAdminCredentials();
 
-      if (u === creds.user && p === creds.pass) {
-        err.classList.remove('show');
-        sessionStorage.setItem('upf_admin_logged', '1');
-        sessionStorage.setItem('upf_admin_user', u);
-        enterAdmin(u);
-      } else {
-        err.classList.add('show');
-        setTimeout(function(){ err.classList.remove('show'); }, 3000);
+      try {
+        var res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: u, pass: p })
+        });
+        var data = await res.json();
+        if (res.ok && data.ok) {
+          err.classList.remove('show');
+          sessionStorage.setItem('upf_admin_logged', '1');
+          sessionStorage.setItem('upf_admin_user', data.user || u);
+          enterAdmin(data.user || u);
+          return;
+        }
+      } catch (e) {
+        // Fallback for offline/local usage
+        var creds = getAdminCredentials();
+        if (u === creds.user && p === creds.pass) {
+          err.classList.remove('show');
+          sessionStorage.setItem('upf_admin_logged', '1');
+          sessionStorage.setItem('upf_admin_user', u);
+          enterAdmin(u);
+          return;
+        }
       }
+
+      err.classList.add('show');
+      setTimeout(function(){ err.classList.remove('show'); }, 3000);
     }
 
     function doLogout() {
@@ -414,13 +432,7 @@
       document.getElementById('page-login').style.display = 'none';
       document.getElementById('admin-shell').style.display = 'flex';
       document.getElementById('loggedUser').textContent = userName || 'المشرف';
-      
-      // Load stored config values into form inputs
-      document.getElementById('cfg_url').value = localStorage.getItem('sb_url') || '';
-      document.getElementById('cfg_key').value = localStorage.getItem('sb_key') || '';
-      document.getElementById('new_user').value = getAdminCredentials().user;
-
-      initSupabase();
+      document.getElementById('new_user').value = userName || 'admin';
       loadDashboard();
     }
 
@@ -438,75 +450,48 @@
       if (secId === 'sec-dash' && Object.keys(charts).length === 0) {
         renderCharts(allMembersData);
       }
+      if (secId === 'sec-config') {
+        checkDbStatus();
+      }
     }
 
-    // ════ SUPABASE CLIENT ════
-    var supabase = null;
-    function initSupabase() {
-      var url = localStorage.getItem('sb_url');
-      var key = localStorage.getItem('sb_key');
-      if (url && key && window.supabase) {
-        try {
-          supabase = window.supabase.createClient(url, key);
-          return true;
-        } catch(e) {
-          supabase = null;
-          return false;
-        }
-      }
-      supabase = null;
-      return false;
-    }
-
-    async function saveConfig() {
-      var url = document.getElementById('cfg_url').value.trim();
-      var key = document.getElementById('cfg_key').value.trim();
-      var st = document.getElementById('cfgStatus');
-
-      if (!url || !key) {
-        st.className = 'cfg-status err';
-        st.textContent = '❌ يرجى إدخال رابط المشروع والمفتاح (URL و Key).';
-        return;
-      }
-
-      st.className = 'cfg-status';
-      st.style.display = 'block';
-      st.innerHTML = '<span class="loader"></span> جاري اختبار الاتصال بقاعدة البيانات...';
+    // ════ DATABASE STATUS CHECK ════
+    async function checkDbStatus() {
+      var b = document.getElementById('dbBadge');
+      var info = document.getElementById('dbDetailsText');
+      if (info) info.innerHTML = '<span class="loader"></span> جاري فحص الاتصال بقاعدة البيانات...';
 
       try {
-        var testClient = window.supabase.createClient(url, key);
-        var res = await testClient.from('members').select('id', { count: 'exact', head: true });
-        if (res.error) throw res.error;
-
-        localStorage.setItem('sb_url', url);
-        localStorage.setItem('sb_key', key);
-        supabase = testClient;
-
-        st.className = 'cfg-status ok';
-        st.textContent = '✅ تم الاتصال بنجاح بقاعدة بيانات Supabase (PostgreSQL)! تم حفظ الإعدادات.';
-        showToast('✅ تم حفظ إعدادات Supabase بنجاح');
-        updateBadge(true);
-        loadDashboard();
-      } catch (err) {
-        st.className = 'cfg-status err';
-        st.textContent = '⚠️ فشل الاتصال: ' + (err.message || 'تأكد من صحة المفاتيح وتشغيل schema.sql في Supabase');
-        showToast('⚠️ تعذر الاتصال بـ Supabase', true);
+        var res = await fetch('/api/status');
+        var json = await res.json();
+        if (res.ok && json.ok) {
+          var isPg = json.isPostgres;
+          b.className = 'db-badge db-ok';
+          b.textContent = isPg ? '🟢 متصل بـ PostgreSQL على Railway' : '🟡 متصل بقاعدة بيانات محلية (' + json.dialect + ')';
+          if (info) {
+            info.innerHTML = 
+              '<strong>نوع المحرك:</strong> ' + json.dialect + ' (Sequelize ORM)<br/>' +
+              '<strong>حالة الاتصال:</strong> نشط وجاهز لاستقبال البيانات ✅<br/>' +
+              '<strong>إجمالي الأعضاء في القاعدة:</strong> ' + json.membersCount + ' عضو<br/>' +
+              '<div style="margin-top:8px;color:' + (isPg ? '#81c784' : 'var(--gold)') + '">' +
+              (isPg ? '⚡ قاعدة البيانات تعمل مباشرة ومربوطة بـ PostgreSQL على Railway.' : 'ℹ️ يعمل حالياً على قاعدة البيانات المحلية، وعند النشر على Railway سيتصل تلقائياً بـ PostgreSQL.') +
+              '</div>';
+          }
+          return;
+        }
+      } catch (e) {
+        console.warn('Status check error', e);
       }
-    }
 
-    function updateBadge(isOk) {
-      var b = document.getElementById('dbBadge');
-      if (isOk) {
-        b.className = 'db-badge db-ok';
-        b.textContent = '🟢 متصل بـ Supabase (PostgreSQL)';
-      } else {
-        b.className = 'db-badge db-off';
-        b.textContent = '💾 وضع التخزين المحلي (غير متصل بـ DB)';
+      b.className = 'db-badge db-off';
+      b.textContent = '💾 وضع التخزين المحلي (غير متصل بالخادم)';
+      if (info) {
+        info.innerHTML = '⚠️ تعذر الاتصال بالخادم. البيانات تحفظ محلياً في المتصفح كنسخة احتياطية.';
       }
     }
 
     // ════ CHANGE PASSWORD ════
-    function changePw() {
+    async function changePw() {
       var u = document.getElementById('new_user').value.trim();
       var p1 = document.getElementById('new_pass').value;
       var p2 = document.getElementById('new_pass2').value;
@@ -528,16 +513,38 @@
         return;
       }
 
-      localStorage.setItem('admin_user', u);
-      localStorage.setItem('admin_pass', p1);
-      sessionStorage.setItem('upf_admin_user', u);
-      document.getElementById('loggedUser').textContent = u;
+      try {
+        var res = await fetch('/api/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ new_user: u, new_pass: p1 })
+        });
+        var data = await res.json();
+        if (res.ok && data.ok) {
+          localStorage.setItem('admin_user', u);
+          localStorage.setItem('admin_pass', p1);
+          sessionStorage.setItem('upf_admin_user', u);
+          document.getElementById('loggedUser').textContent = u;
 
-      st.className = 'cfg-status ok';
-      st.textContent = '✅ تم حفظ اسم المستخدم وكلمة المرور الجديدة بنجاح!';
-      showToast('✅ تم تغيير بيانات الدخول بنجاح');
-      document.getElementById('new_pass').value = '';
-      document.getElementById('new_pass2').value = '';
+          st.className = 'cfg-status ok';
+          st.textContent = '✅ تم تحديث اسم المستخدم وكلمة المرور في قاعدة البيانات بنجاح!';
+          showToast('✅ تم تغيير بيانات الدخول بنجاح');
+          document.getElementById('new_pass').value = '';
+          document.getElementById('new_pass2').value = '';
+          return;
+        } else {
+          throw new Error(data.error || 'فشل التحديث');
+        }
+      } catch(e) {
+        // Fallback local
+        localStorage.setItem('admin_user', u);
+        localStorage.setItem('admin_pass', p1);
+        sessionStorage.setItem('upf_admin_user', u);
+        document.getElementById('loggedUser').textContent = u;
+        st.className = 'cfg-status ok';
+        st.textContent = '✅ تم حفظ البيانات محلياً بنجاح!';
+        showToast('✅ تم الحفظ محلياً');
+      }
     }
 
     // ════ DATA LOADING & CHARTS ════
@@ -553,35 +560,28 @@
       emptyEl.style.display = 'none';
       tbody.innerHTML = '';
 
-      var isDbConnected = false;
+      checkDbStatus();
+
       var data = [];
-
-      if (supabase) {
-        try {
-          var res = await supabase.from('members').select('*').order('created_at', { ascending: false });
-          if (!res.error && res.data) {
-            data = res.data;
-            isDbConnected = true;
-          } else {
-            console.warn('Supabase fetch error, fallback to local', res.error);
-          }
-        } catch(e) {
-          console.warn('Supabase error', e);
+      try {
+        var res = await fetch('/api/members');
+        var json = await res.json();
+        if (res.ok && json.ok) {
+          data = json.data || [];
+        } else {
+          throw new Error(json.error || 'فشل الجلب');
         }
-      }
-
-      if (!isDbConnected) {
-        // Fallback to local storage
+      } catch(e) {
+        console.warn('API error, reading local fallback', e);
         try {
           data = JSON.parse(localStorage.getItem('upf_local') || '[]');
-        } catch(e) {
+        } catch(err) {
           data = [];
         }
       }
 
       allMembersData = data;
       loadingEl.style.display = 'none';
-      updateBadge(isDbConnected);
 
       var timeStr = new Date().toLocaleTimeString('ar-SD', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       document.getElementById('lastRef').textContent = timeStr;
@@ -814,14 +814,14 @@
       if (!confirm('هل أنت متأكد من حذف هذا السجل نهائياً؟')) return;
 
       var ok = false;
-      if (supabase && !id.startsWith('local-')) {
-        try {
-          var res = await supabase.from('members').delete().eq('id', id);
-          if (res.error) throw res.error;
+      try {
+        var res = await fetch('/api/members/' + id, { method: 'DELETE' });
+        var data = await res.json();
+        if (res.ok && data.ok) {
           ok = true;
-        } catch(e) {
-          alert('تعذر الحذف من قاعدة البيانات: ' + e.message);
         }
+      } catch (e) {
+        console.warn('API delete error', e);
       }
 
       // Also clean from localStorage if present
@@ -836,6 +836,8 @@
       if (ok) {
         showToast('🗑️ تم حذف السجل بنجاح');
         loadDashboard();
+      } else {
+        showToast('⚠️ تعذر حذف السجل', true);
       }
     }
 

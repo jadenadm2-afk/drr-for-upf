@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8"/>
@@ -6,7 +6,6 @@
   <title>استمارة عضوية – الجبهة الشعبية المتحدة UPF</title>
   <meta name="description" content="استمارة تسجيل عضوية حركة/جيش تحرير السودان – الجبهة الشعبية المتحدة UPF"/>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{--black:#0d0d0d;--red:#c0272d;--navy:#1a1a5e;--green:#1a6b2f;--gold:#d4a843;--bg:#0f0f1a;--card:rgba(255,255,255,0.05);--border:rgba(212,168,67,0.28);--ibg:rgba(255,255,255,0.06);--iborder:rgba(212,168,67,0.38);--sh:0 20px 50px rgba(0,0,0,0.55);}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -204,28 +203,44 @@
     // Page switch
     function showPage(id){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
 
-    // Supabase init from shared storage
-    var supabase=null;
-    (function(){var url=localStorage.getItem('sb_url');var key=localStorage.getItem('sb_key');if(url&&key){try{supabase=window.supabase.createClient(url,key);}catch(e){supabase=null;}}})();
-
     // Photo
     var currentPhoto=null;
     function handlePhoto(e){var f=e.target.files[0];if(!f)return;var img=new Image();var r=new FileReader();r.onload=function(ev){img.src=ev.target.result;img.onload=function(){var c=document.createElement('canvas');var M=400,w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M;}if(h>M){w=Math.round(w*M/h);h=M;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);currentPhoto=c.toDataURL('image/jpeg',.75);var p=document.getElementById('photoPreview');p.innerHTML='<img src="'+currentPhoto+'" alt="صورة"/>';p.classList.add('has-image');};};r.readAsDataURL(f);}
 
-    // Submit
+    // Submit form directly to PostgreSQL via backend API
     document.getElementById('memberForm').addEventListener('submit',async function(e){
       e.preventDefault();
       var name=document.getElementById('f_name').value.trim();
       if(!name){var el=document.getElementById('f_name');el.focus();el.style.borderColor='#ef5350';setTimeout(function(){el.style.borderColor='';},2200);return;}
       var btn=document.getElementById('submitBtn');var st=document.getElementById('saveStatus');
       btn.disabled=true;btn.innerHTML='<span class="loader"></span> جاري الحفظ...';
-      st.className='save-status loading';st.textContent='⏳ جاري الحفظ في PostgreSQL...';
+      st.className='save-status loading';st.textContent='⏳ جاري الحفظ في قاعدة بيانات PostgreSQL...';
       var rec={full_name:name,date_of_birth:gv('f_dob')||null,place_of_birth:gv('f_pob')||null,current_residence:gv('f_residence')||null,state:gv('f_state')||null,region:gv('f_region')||null,locality:gv('f_locality')||null,phone:gv('f_phone')||null,email:gv('f_email')||null,photo_base64:currentPhoto||null,organizational_role:gv('f_role')||null,join_date:gv('f_joinDate')||null,executive_sector:gv('f_execSector')||null,first_sector:gv('f_firstSector')||null,current_sector:gv('f_currentSector')||null,membership_status:gv('f_status')||'pending',last_record_update:gv('f_lastUpdate')||null,notes:gv('f_notes')||null};
-      if(supabase){
-        try{var res=await supabase.from('members').insert([rec]);if(res.error)throw res.error;st.className='save-status ok';st.textContent='✅ تم الحفظ في PostgreSQL بنجاح!';showToast('✅ تم حفظ بيانات العضو!');resetForm();}
-        catch(err){saveLocal(rec);st.className='save-status err';st.textContent='⚠️ '+err.message+' — تم الحفظ محلياً كاحتياط';showToast('⚠️ حفظ محلي احتياطي');}
-      }else{saveLocal(rec);st.className='save-status ok';st.textContent='💾 تم الحفظ محلياً. لحفظ في PostgreSQL أعد ضبط Supabase من لوحة الإدارة.';showToast('💾 تم الحفظ محلياً');resetForm();}
-      btn.disabled=false;btn.innerHTML='✦ حفظ في قاعدة البيانات ✦';
+      
+      try {
+        var res = await fetch('/api/members', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(rec)
+        });
+        var data = await res.json();
+        if (res.ok && data.ok) {
+          st.className='save-status ok';
+          st.textContent='✅ تم تسجيل العضو وحفظه في PostgreSQL بنجاح!';
+          showToast('✅ تم تسجيل بيانات العضو بنجاح!');
+          resetForm();
+        } else {
+          throw new Error(data.error || 'خطأ في الخادم');
+        }
+      } catch(err) {
+        saveLocal(rec);
+        st.className='save-status err';
+        st.textContent='⚠️ تعذر الوصول للخادم ('+err.message+') — تم الحفظ محلياً كنسخة احتياطية';
+        showToast('⚠️ تم الحفظ محلياً كاحتياط');
+      } finally {
+        btn.disabled=false;
+        btn.innerHTML='✦ حفظ في قاعدة البيانات ✦';
+      }
     });
     function gv(id){return document.getElementById(id).value;}
     function saveLocal(r){var a=JSON.parse(localStorage.getItem('upf_local')||'[]');r.id='local-'+Date.now();r.created_at=new Date().toISOString();a.push(r);localStorage.setItem('upf_local',JSON.stringify(a));}
