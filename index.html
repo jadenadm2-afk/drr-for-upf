@@ -176,7 +176,17 @@
       <div class="section-title"><span>🏛</span> البيانات التنظيمية</div>
       <div class="form-grid">
         <div class="field"><label><span class="num">10</span> الصفة التنظيمية</label>
-          <select id="f_role"><option value="">-- اختر الصفة --</option><option>عضو عادي</option><option>كادر تنظيمي</option><option>قيادي</option><option>مؤسس</option><option>مناصر</option></select></div>
+          <input type="text" id="f_role" list="roleOptions" placeholder="اختر من القائمة أو اكتب الصفة يدوياً..." autocomplete="off"/>
+          <datalist id="roleOptions">
+            <option value="عضو عادي"></option>
+            <option value="كادر تنظيمي"></option>
+            <option value="عضو مكتب تنفيذي"></option>
+            <option value="قيادي"></option>
+            <option value="رئيس قطاع"></option>
+            <option value="مؤسس"></option>
+            <option value="مناصر"></option>
+          </datalist>
+        </div>
         <div class="field"><label><span class="num">11</span> تاريخ الانضمام</label><input type="date" id="f_joinDate"/></div>
         <div class="field"><label><span class="num">12</span> القطاع – المجلس التنفيذي</label><input type="text" id="f_execSector" placeholder="قطاع المجلس التنفيذي"/></div>
         <div class="field"><label><span class="num">13</span> القطاع الأول للعضو</label><input type="text" id="f_firstSector" placeholder="القطاع الأول"/></div>
