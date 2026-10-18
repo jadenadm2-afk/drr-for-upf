@@ -260,11 +260,10 @@
     .ps-photo{width:110px;height:130px;object-fit:cover;border:2px solid #1a1a5e;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.15);display:block;margin:0 auto}
     .ps-photo-placeholder{width:110px;height:130px;border:2px dashed #999;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:#999;margin:0 auto}
     .ps-status-tag{display:inline-block;margin-top:8px;padding:3px 8px;border-radius:12px;font-size:.68rem;font-weight:800;color:#fff;border:none}
-    .ps-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:.78rem}
-    .ps-table td{padding:6px 8px;border:1px solid #d5d8dc;line-height:1.45;vertical-align:middle;word-break:break-word;overflow-wrap:anywhere}
-    .ps-table td.ps-lbl{background:#f8f9fb;font-weight:700;color:#1a1a5e;width:21%;font-size:.75rem}
-    .ps-table td.ps-val{color:#222;font-weight:600;width:29%}
-    .ps-footer{margin-top:24px;padding-top:14px;border-top:2px solid #1a1a5e;display:flex;justify-content:space-between;align-items:flex-end}
+    .ps-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:.8rem}
+    .ps-table td{padding:7px 9px;border:1px solid #d5d8dc;line-height:1.45;vertical-align:middle;word-break:break-word;overflow-wrap:anywhere}
+    .ps-table td.ps-lbl{background:#f8f9fb;font-weight:700;color:#1a1a5e;font-size:.76rem}
+    .ps-table td.ps-val{color:#111;font-weight:600;font-size:.8rem;background:#fff}
     .ps-stamp-box{text-align:center;font-size:.74rem;font-weight:700;color:#1a1a5e}
     .ps-stamp-circle{width:75px;height:75px;border:2px dashed #c0272d;border-radius:50%;margin:6px auto 0;display:flex;align-items:center;justify-content:center;color:#c0272d;font-size:.62rem;font-weight:800;transform:rotate(-8deg)}
     .ps-sig{margin-top:30px;border-top:1px dotted #666;width:130px;margin-left:auto;margin-right:auto}
@@ -703,6 +702,12 @@
           </div>
           <div style="flex:1;min-width:0;overflow:hidden">
             <table class="ps-table">
+              <colgroup>
+                <col style="width:19%"/>
+                <col style="width:31%"/>
+                <col style="width:19%"/>
+                <col style="width:31%"/>
+              </colgroup>
               <tr>
                 <td class="ps-lbl">الاسم الكامل:</td>
                 <td class="ps-val" colspan="3"><strong id="psFullName" style="font-size:1.05rem;color:#1a1a5e"></strong></td>
