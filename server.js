@@ -13,36 +13,31 @@ const JWT_SECRET = process.env.JWT_SECRET || 'upf-secure-jwt-key-2026-zalingei-c
 // ═══════════════════════════════════════════════════════
 // SECURITY HARDENING MIDDLEWARES
 // ═══════════════════════════════════════════════════════
-// 1. Hide server fingerprint
 app.disable('x-powered-by');
 
-// 2. Set secure HTTP response headers
 app.use(helmet({
-  contentSecurityPolicy: false, // Allow Google Fonts & Chart.js CDN
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false
 }));
 
-// 3. Rate limiter for Admin Login (Prevents Brute Force Attacks)
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Max 10 attempts per IP per 15 minutes
+  windowMs: 15 * 60 * 1000,
+  max: 15,
   message: { ok: false, error: 'تم حظر محاولات الدخول مؤقتاً لكثرة المحاولات الخاطئة. الرجاء المحاولة بعد 15 دقيقة.' },
   standardHeaders: true,
   legacyHeaders: false
 });
 
-// 4. Rate limiter for Public Registrations (Prevents Spam & Flooding)
 const registrationLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30, // Max 30 member submissions per 15 mins per IP
+  max: 35,
   message: { ok: false, error: 'تم استقبال عدد كبير من الاستمارات من هذا الجهاز. يرجى الانتظار قليلاً.' },
   standardHeaders: true,
   legacyHeaders: false
 });
 
-// 5. Body parser limits (Strict 10MB limit for image base64)
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
 // ═══════════════════════════════════════════════════════
 // SEQUELIZE DATABASE INITIALIZATION
@@ -110,31 +105,44 @@ const Member = sequelize.define('Member', {
   timestamps: true
 });
 
-const Setting = sequelize.define('Setting', {
-  key: {
+// System Users Model with Roles ('admin' and 'viewer')
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+  username: {
     type: DataTypes.STRING,
     unique: true,
     allowNull: false
   },
-  value: {
-    type: DataTypes.TEXT,
+  password: {
+    type: DataTypes.STRING,
     allowNull: false
+  },
+  role: {
+    type: DataTypes.STRING, // 'admin' or 'viewer'
+    allowNull: false,
+    defaultValue: 'viewer'
+  },
+  display_name: {
+    type: DataTypes.STRING
   }
 }, {
-  tableName: 'settings',
+  tableName: 'users',
   timestamps: true
 });
 
-// Helper for XSS sanitization
 function sanitize(str) {
   if (typeof str !== 'string') return str;
   return str.replace(/<[^>]*>?/gm, '').trim();
 }
 
 // ═══════════════════════════════════════════════════════
-// JWT AUTHENTICATION MIDDLEWARE
+// AUTHENTICATION & ROLE MIDDLEWARES
 // ═══════════════════════════════════════════════════════
-function requireAdminAuth(req, res, next) {
+function requireAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ ok: false, error: 'غير مصرح: يجب تسجيل الدخول أولاً' });
@@ -143,10 +151,56 @@ function requireAdminAuth(req, res, next) {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.adminUser = decoded.user;
+    req.user = decoded.user;
+    req.userRole = decoded.role;
     next();
   } catch (err) {
     return res.status(401).json({ ok: false, error: 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً' });
+  }
+}
+
+function requireAdmin(req, res, next) {
+  requireAuth(req, res, () => {
+    if (req.userRole !== 'admin') {
+      return res.status(403).json({
+        ok: false,
+        error: 'صلاحية مرفوضة: حسابك يمتلك صلاحية المشاهدة فقط (Read-only) ولا يمكنه تعديل أو حذف البيانات.'
+      });
+    }
+    next();
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// SEED DEFAULT USERS (ADMIN & VIEWER)
+// ═══════════════════════════════════════════════════════
+async function initSystemUsers() {
+  try {
+    const adminExists = await User.findOne({ where: { username: 'admin' } });
+    if (!adminExists) {
+      const hashedAdminPass = bcrypt.hashSync('upf@2026', 10);
+      await User.create({
+        username: 'admin',
+        password: hashedAdminPass,
+        role: 'admin',
+        display_name: 'المسؤول التنفيذي الكامل'
+      });
+      console.log('✅ Default Admin account created: admin / upf@2026');
+    }
+
+    const viewerExists = await User.findOne({ where: { username: 'viewer' } });
+    if (!viewerExists) {
+      const hashedViewerPass = bcrypt.hashSync('view@2026', 10);
+      await User.create({
+        username: 'viewer',
+        password: hashedViewerPass,
+        role: 'viewer',
+        display_name: 'مشاهد (صلاحية عرض وطباعة فقط)'
+      });
+      console.log('✅ Default Viewer account created: viewer / view@2026');
+    }
+  } catch (err) {
+    console.error('Error seeding users:', err);
   }
 }
 
@@ -171,7 +225,7 @@ app.get('/api/status', async (req, res) => {
   }
 });
 
-// Submit Member Registration Form (Public with Rate Limiter & Sanitization)
+// Submit Member Registration Form (Public)
 app.post('/api/members', registrationLimiter, async (req, res) => {
   try {
     const {
@@ -186,7 +240,6 @@ app.post('/api/members', registrationLimiter, async (req, res) => {
       return res.status(400).json({ ok: false, error: 'الاسم الكامل مطلوب' });
     }
 
-    // Validate photo format if provided
     let safePhoto = null;
     if (photo_base64 && typeof photo_base64 === 'string') {
       if (photo_base64.startsWith('data:image/')) {
@@ -222,7 +275,7 @@ app.post('/api/members', registrationLimiter, async (req, res) => {
   }
 });
 
-// Admin Login (Protected with Rate Limiter & Password Hashing)
+// Admin & Viewer Login
 app.post('/api/login', loginLimiter, async (req, res) => {
   try {
     const { user, pass } = req.body;
@@ -230,59 +283,125 @@ app.post('/api/login', loginLimiter, async (req, res) => {
       return res.status(400).json({ ok: false, error: 'اسم المستخدم وكلمة المرور مطلوبان' });
     }
 
-    // Retrieve stored credentials
-    const userRow = await Setting.findOne({ where: { key: 'admin_user' } });
-    const passRow = await Setting.findOne({ where: { key: 'admin_pass' } });
+    const trimmedUser = user.trim();
+    const account = await User.findOne({ where: { username: trimmedUser } });
 
-    const correctUser = userRow ? userRow.value : (process.env.ADMIN_USER || 'admin');
-    const storedPass = passRow ? passRow.value : (process.env.ADMIN_PASS || 'upf@2026');
-
-    // Check username
-    if (user.trim() !== correctUser) {
-      return res.status(401).json({ ok: false, error: 'بيانات الدخول غير صحيحة' });
+    if (!account) {
+      return res.status(401).json({ ok: false, error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
     }
 
-    // Verify password (supports bcrypt hash or legacy plain text with auto-upgrade)
-    let isMatch = false;
-    if (storedPass.startsWith('$2a$') || storedPass.startsWith('$2b$')) {
-      isMatch = bcrypt.compareSync(pass, storedPass);
-    } else {
-      isMatch = (pass === storedPass);
-      // Auto-upgrade plain text to bcrypt hash
-      if (isMatch) {
-        const hashed = bcrypt.hashSync(pass, 10);
-        await Setting.upsert({ key: 'admin_pass', value: hashed });
-      }
-    }
-
+    // Compare with bcrypt hash
+    const isMatch = bcrypt.compareSync(pass, account.password);
     if (!isMatch) {
-      return res.status(401).json({ ok: false, error: 'بيانات الدخول غير صحيحة' });
+      return res.status(401).json({ ok: false, error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
     }
 
-    // Generate signed JWT token valid for 24 hours
-    const token = jwt.sign({ user: correctUser }, JWT_SECRET, { expiresIn: '24h' });
+    // Generate signed JWT token with role information
+    const token = jwt.sign(
+      { user: account.username, role: account.role },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
-    res.json({ ok: true, token, user: correctUser });
+    res.json({
+      ok: true,
+      token,
+      user: account.username,
+      role: account.role,
+      displayName: account.display_name || account.username
+    });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ ok: false, error: 'خطأ أثناء تسجيل الدخول' });
   }
 });
 
-// Get Members List (PROTECTED - Requires JWT Token)
-app.get('/api/members', requireAdminAuth, async (req, res) => {
+// Get Members List (Accessible to both Admin & Viewer)
+app.get('/api/members', requireAuth, async (req, res) => {
   try {
     const members = await Member.findAll({
       order: [['createdAt', 'DESC']]
     });
-    res.json({ ok: true, data: members });
+    res.json({ ok: true, data: members, userRole: req.userRole });
   } catch (err) {
     res.status(500).json({ ok: false, error: 'تعذر جلب البيانات' });
   }
 });
 
-// Delete Member (PROTECTED - Requires JWT Token)
-app.delete('/api/members/:id', requireAdminAuth, async (req, res) => {
+// Get Single Member (Accessible to both Admin & Viewer for printing/viewing)
+app.get('/api/members/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const member = await Member.findByPk(id);
+    if (!member) {
+      return res.status(404).json({ ok: false, error: 'السجل غير موجود' });
+    }
+    res.json({ ok: true, data: member });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'تعذر جلب السجل' });
+  }
+});
+
+// Update Member (RESTRICTED TO ADMIN ONLY)
+app.put('/api/members/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const member = await Member.findByPk(id);
+    if (!member) {
+      return res.status(404).json({ ok: false, error: 'السجل غير موجود' });
+    }
+
+    const {
+      full_name, date_of_birth, place_of_birth, current_residence,
+      state, region, locality, phone, email, photo_base64,
+      organizational_role, join_date, executive_sector, first_sector,
+      current_sector, membership_status, last_record_update, notes
+    } = req.body;
+
+    const cleanName = sanitize(full_name);
+    if (!cleanName) {
+      return res.status(400).json({ ok: false, error: 'الاسم الكامل مطلوب' });
+    }
+
+    let safePhoto = member.photo_base64;
+    if (photo_base64 !== undefined) {
+      if (photo_base64 && typeof photo_base64 === 'string' && photo_base64.startsWith('data:image/')) {
+        safePhoto = photo_base64;
+      } else if (photo_base64 === null || photo_base64 === '') {
+        safePhoto = null;
+      }
+    }
+
+    await member.update({
+      full_name: cleanName,
+      date_of_birth: sanitize(date_of_birth),
+      place_of_birth: sanitize(place_of_birth),
+      current_residence: sanitize(current_residence),
+      state: sanitize(state),
+      region: sanitize(region),
+      locality: sanitize(locality),
+      phone: sanitize(phone),
+      email: sanitize(email),
+      photo_base64: safePhoto,
+      organizational_role: sanitize(organizational_role),
+      join_date: sanitize(join_date),
+      executive_sector: sanitize(executive_sector),
+      first_sector: sanitize(first_sector),
+      current_sector: sanitize(current_sector),
+      membership_status: sanitize(membership_status) || member.membership_status,
+      last_record_update: sanitize(last_record_update) || new Date().toISOString().split('T')[0],
+      notes: sanitize(notes)
+    });
+
+    res.json({ ok: true, member, message: 'تم تحديث بيانات العضو بنجاح' });
+  } catch (err) {
+    console.error('Update member error:', err);
+    res.status(500).json({ ok: false, error: 'تعذر تعديل بيانات العضو' });
+  }
+});
+
+// Delete Member (RESTRICTED TO ADMIN ONLY)
+app.delete('/api/members/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Member.destroy({ where: { id } });
@@ -296,25 +415,41 @@ app.delete('/api/members/:id', requireAdminAuth, async (req, res) => {
   }
 });
 
-// Change Admin Password (PROTECTED - Requires JWT Token + Bcrypt Hashing)
-app.post('/api/change-password', requireAdminAuth, async (req, res) => {
+// Change Password (RESTRICTED TO ADMIN ONLY)
+app.post('/api/change-password', requireAdmin, async (req, res) => {
   try {
-    const { new_user, new_pass } = req.body;
-    if (!new_user || !new_pass || new_pass.length < 4) {
+    const { target_user, new_user, new_pass } = req.body;
+    if (!new_pass || new_pass.length < 4) {
       return res.status(400).json({ ok: false, error: 'كلمة المرور يجب ألا تقل عن 4 أحرف' });
     }
 
-    // Hash password before saving to database
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(new_pass, salt);
+    const usernameToUpdate = target_user || req.user;
+    const account = await User.findOne({ where: { username: usernameToUpdate } });
 
-    await Setting.upsert({ key: 'admin_user', value: sanitize(new_user) });
-    await Setting.upsert({ key: 'admin_pass', value: hashedPassword });
+    if (!account) {
+      return res.status(404).json({ ok: false, error: 'المستخدم غير موجود' });
+    }
 
-    // Generate new token with new user
-    const newToken = jwt.sign({ user: sanitize(new_user) }, JWT_SECRET, { expiresIn: '24h' });
+    const hashedPassword = bcrypt.hashSync(new_pass, 10);
+    const updatedUsername = new_user ? sanitize(new_user) : account.username;
 
-    res.json({ ok: true, token: newToken, message: 'تم حفظ وتشفير بيانات الدخول بنجاح' });
+    await account.update({
+      username: updatedUsername,
+      password: hashedPassword
+    });
+
+    // If admin changed their own username/password, generate new token
+    let newToken = null;
+    if (usernameToUpdate === req.user) {
+      newToken = jwt.sign({ user: updatedUsername, role: account.role }, JWT_SECRET, { expiresIn: '24h' });
+    }
+
+    res.json({
+      ok: true,
+      token: newToken,
+      user: updatedUsername,
+      message: `تم تحديث كلمة مرور (${updatedUsername}) بنجاح`
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: 'فشل تغيير كلمة المرور' });
   }
@@ -337,10 +472,11 @@ app.get('/admin', (req, res) => {
 // SERVER BOOTSTRAP
 // ═══════════════════════════════════════════════════════
 sequelize.sync({ alter: true })
-  .then(() => {
+  .then(async () => {
     console.log(`Sequelize synchronized successfully with ${sequelize.getDialect()}!`);
+    await initSystemUsers();
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🔒 UPF Membership System (Secured) is running on port ${PORT}`);
+      console.log(`🔒 UPF Membership System (Role-Protected) is running on port ${PORT}`);
     });
   })
   .catch((err) => {
