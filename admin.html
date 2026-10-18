@@ -111,15 +111,14 @@
     .table-wrap::-webkit-scrollbar{height:16px;width:10px}
     .table-wrap::-webkit-scrollbar-track{background:#121220;border-radius:10px;border:1px solid rgba(212,168,67,.25)}
     .table-wrap::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--gold),#e6b84a);border-radius:10px;border:3px solid #121220}
-    .table-wrap::-webkit-scrollbar-thumb:hover{background:#ffd54f}
-    table{width:100%;min-width:1450px;border-collapse:separate;border-spacing:0;font-size:.8rem}
-    thead tr{background:linear-gradient(90deg,rgba(192,39,45,.28),rgba(26,26,94,.28));position:sticky;top:0;z-index:10}
-    th{padding:11px 13px;font-weight:700;color:var(--gold);text-align:right;white-space:nowrap;border-bottom:1px solid var(--border);background:#18182c}
-    tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .2s}
-    tbody tr:hover{background:rgba(255,255,255,.05)}
-    td{padding:9px 13px;color:rgba(255,255,255,.78);text-align:right;vertical-align:middle;white-space:nowrap;background:inherit}
+    .table-wrap table{width:100%;min-width:1450px;border-collapse:separate;border-spacing:0;font-size:.8rem}
+    .table-wrap thead tr{background:linear-gradient(90deg,rgba(192,39,45,.28),rgba(26,26,94,.28));position:sticky;top:0;z-index:10}
+    .table-wrap th{padding:11px 13px;font-weight:700;color:var(--gold);text-align:right;white-space:nowrap;border-bottom:1px solid var(--border);background:#18182c}
+    .table-wrap tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .2s}
+    .table-wrap tbody tr:hover{background:rgba(255,255,255,.05)}
+    .table-wrap td{padding:9px 13px;color:rgba(255,255,255,.78);text-align:right;vertical-align:middle;white-space:nowrap;background:inherit}
     /* Sticky Actions column pinned to left edge */
-    th.col-actions, td.col-actions{
+    .table-wrap th.col-actions, .table-wrap td.col-actions{
       position:sticky!important;
       left:0!important;
       z-index:5!important;
@@ -127,15 +126,15 @@
       box-shadow:-4px 0 12px rgba(0,0,0,.7)!important;
       border-right:1px solid var(--border)!important;
     }
-    thead th.col-actions{
+    .table-wrap thead th.col-actions{
       z-index:15!important;
       background:#201b38!important;
     }
-    tbody tr:hover td.col-actions{
+    .table-wrap tbody tr:hover td.col-actions{
       background:#22203c!important;
     }
-    td.photo-cell img{width:32px;height:38px;object-fit:cover;border-radius:5px;border:1px solid var(--border)}
-    td.photo-cell .no-photo{width:32px;height:38px;background:rgba(255,255,255,.05);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.9rem;border:1px dashed rgba(255,255,255,.15)}
+    .table-wrap td.photo-cell img{width:32px;height:38px;object-fit:cover;border-radius:5px;border:1px solid var(--border)}
+    .table-wrap td.photo-cell .no-photo{width:32px;height:38px;background:rgba(255,255,255,.05);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.9rem;border:1px dashed rgba(255,255,255,.15)}
     .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700}
     .b-active{background:rgba(26,107,47,.28);color:#4caf50;border:1px solid rgba(76,175,80,.28)}
     .b-inactive{background:rgba(192,39,45,.2);color:#ef5350;border:1px solid rgba(239,83,80,.28)}
@@ -259,11 +258,10 @@
     .ps-photo-box{width:115px;flex-shrink:0;text-align:center}
     .ps-photo{width:110px;height:130px;object-fit:cover;border:2px solid #1a1a5e;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.15);display:block;margin:0 auto}
     .ps-photo-placeholder{width:110px;height:130px;border:2px dashed #999;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:#999;margin:0 auto}
-    .ps-status-tag{display:inline-block;margin-top:8px;padding:3px 8px;border-radius:12px;font-size:.68rem;font-weight:800;color:#fff;border:none}
-    .ps-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:.8rem}
-    .ps-table td{padding:7px 9px;border:1px solid #d5d8dc;line-height:1.45;vertical-align:middle;word-break:break-word;overflow-wrap:anywhere}
-    .ps-table td.ps-lbl{background:#f8f9fb;font-weight:700;color:#1a1a5e;font-size:.76rem}
-    .ps-table td.ps-val{color:#111;font-weight:600;font-size:.8rem;background:#fff}
+    .ps-table{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important;font-size:.78rem!important}
+    .ps-table td{padding:6px 8px!important;border:1px solid #d5d8dc!important;line-height:1.4!important;vertical-align:middle!important;word-break:break-word!important;overflow-wrap:anywhere!important;white-space:normal!important}
+    .ps-table td.ps-lbl{background:#f4f6fa!important;font-weight:700!important;color:#1a1a5e!important;font-size:.74rem!important;white-space:nowrap!important}
+    .ps-table td.ps-val{color:#111!important;font-weight:600!important;font-size:.76rem!important;background:#fff!important}
     .ps-stamp-box{text-align:center;font-size:.74rem;font-weight:700;color:#1a1a5e}
     .ps-stamp-circle{width:75px;height:75px;border:2px dashed #c0272d;border-radius:50%;margin:6px auto 0;display:flex;align-items:center;justify-content:center;color:#c0272d;font-size:.62rem;font-weight:800;transform:rotate(-8deg)}
     .ps-sig{margin-top:30px;border-top:1px dotted #666;width:130px;margin-left:auto;margin-right:auto}
@@ -700,17 +698,17 @@
             <div id="psPhotoWrap"></div>
             <div id="psStatusTag" class="ps-status-tag">عضوية نشطة</div>
           </div>
-          <div style="flex:1;min-width:0;overflow:hidden">
+          <div style="flex:1;min-width:0">
             <table class="ps-table">
               <colgroup>
-                <col style="width:19%"/>
-                <col style="width:31%"/>
-                <col style="width:19%"/>
-                <col style="width:31%"/>
+                <col style="width:20%"/>
+                <col style="width:30%"/>
+                <col style="width:20%"/>
+                <col style="width:30%"/>
               </colgroup>
               <tr>
                 <td class="ps-lbl">الاسم الكامل:</td>
-                <td class="ps-val" colspan="3"><strong id="psFullName" style="font-size:1.05rem;color:#1a1a5e"></strong></td>
+                <td class="ps-val" colspan="3"><strong id="psFullName" style="font-size:1.02rem;color:#1a1a5e"></strong></td>
               </tr>
               <tr>
                 <td class="ps-lbl">تاريخ الميلاد:</td>
@@ -734,7 +732,7 @@
                 <td class="ps-lbl">رقم الهاتف:</td>
                 <td class="ps-val" id="psPhone" dir="ltr" style="text-align:right"></td>
                 <td class="ps-lbl">البريد الإلكتروني:</td>
-                <td class="ps-val" id="psEmail" dir="ltr" style="text-align:right"></td>
+                <td class="ps-val" id="psEmail" dir="ltr" style="text-align:right;word-break:break-all"></td>
               </tr>
               <tr>
                 <td class="ps-lbl">الصفة التنظيمية:</td>
