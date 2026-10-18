@@ -98,17 +98,42 @@
     .search-input::placeholder{color:rgba(255,255,255,.3)}
     .filter-sel{background:var(--ibg);border:1px solid var(--iborder);border-radius:50px;padding:7px 13px;color:#fff;font-family:'Cairo',sans-serif;font-size:.78rem;outline:none;direction:rtl;cursor:pointer}
     .filter-sel option{background:#1a1a2e}
-    .table-wrap{overflow-x:auto!important;max-height:500px;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--gold) rgba(255,255,255,.08)}
-    .table-wrap::-webkit-scrollbar{height:10px;width:8px}
-    .table-wrap::-webkit-scrollbar-track{background:rgba(255,255,255,.05);border-radius:8px}
-    .table-wrap::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--gold),#b8860b);border-radius:8px;border:2px solid rgba(10,10,20,.8)}
-    .table-wrap::-webkit-scrollbar-thumb:hover{background:#f1c40f}
-    table{width:100%;min-width:1450px;border-collapse:collapse;font-size:.8rem}
-    thead tr{background:linear-gradient(90deg,rgba(192,39,45,.22),rgba(26,26,94,.22));position:sticky;top:0;z-index:1}
-    th{padding:10px 13px;font-weight:700;color:var(--gold);text-align:right;white-space:nowrap;border-bottom:1px solid var(--border)}
+    .table-wrap{
+      overflow-x:scroll!important;
+      max-height:560px;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      cursor:grab;
+      scrollbar-width:auto;
+      scrollbar-color:var(--gold) #121220;
+    }
+    .table-wrap:active{cursor:grabbing}
+    .table-wrap::-webkit-scrollbar{height:16px;width:10px}
+    .table-wrap::-webkit-scrollbar-track{background:#121220;border-radius:10px;border:1px solid rgba(212,168,67,.25)}
+    .table-wrap::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--gold),#e6b84a);border-radius:10px;border:3px solid #121220}
+    .table-wrap::-webkit-scrollbar-thumb:hover{background:#ffd54f}
+    table{width:100%;min-width:1450px;border-collapse:separate;border-spacing:0;font-size:.8rem}
+    thead tr{background:linear-gradient(90deg,rgba(192,39,45,.28),rgba(26,26,94,.28));position:sticky;top:0;z-index:10}
+    th{padding:11px 13px;font-weight:700;color:var(--gold);text-align:right;white-space:nowrap;border-bottom:1px solid var(--border);background:#18182c}
     tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .2s}
-    tbody tr:hover{background:rgba(255,255,255,.04)}
-    td{padding:9px 13px;color:rgba(255,255,255,.78);text-align:right;vertical-align:middle;white-space:nowrap}
+    tbody tr:hover{background:rgba(255,255,255,.05)}
+    td{padding:9px 13px;color:rgba(255,255,255,.78);text-align:right;vertical-align:middle;white-space:nowrap;background:inherit}
+    /* Sticky Actions column pinned to left edge */
+    th.col-actions, td.col-actions{
+      position:sticky!important;
+      left:0!important;
+      z-index:5!important;
+      background:#16162a!important;
+      box-shadow:-4px 0 12px rgba(0,0,0,.7)!important;
+      border-right:1px solid var(--border)!important;
+    }
+    thead th.col-actions{
+      z-index:15!important;
+      background:#201b38!important;
+    }
+    tbody tr:hover td.col-actions{
+      background:#22203c!important;
+    }
     td.photo-cell img{width:32px;height:38px;object-fit:cover;border-radius:5px;border:1px solid var(--border)}
     td.photo-cell .no-photo{width:32px;height:38px;background:rgba(255,255,255,.05);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.9rem;border:1px dashed rgba(255,255,255,.15)}
     .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700}
@@ -383,18 +408,22 @@
                 <option value="">كل الحالات</option><option value="active">نشط</option><option value="inactive">غير نشط</option><option value="pending">قيد المراجعة</option>
               </select>
               <!-- Scroll Helpers -->
-              <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:50px;padding:3px 10px">
-                <span style="font-size:.72rem;color:var(--gold);font-weight:600">↔️ تمرير:</span>
-                <button type="button" onclick="scrollTable(-280)" title="تمرير لليمين" style="background:rgba(212,168,67,.2);border:none;color:var(--gold);border-radius:4px;padding:3px 8px;cursor:pointer;font-size:.8rem;font-weight:700">◀</button>
-                <button type="button" onclick="scrollTable(280)" title="تمرير لليسار" style="background:rgba(212,168,67,.2);border:none;color:var(--gold);border-radius:4px;padding:3px 8px;cursor:pointer;font-size:.8rem;font-weight:700">▶</button>
+              <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(212,168,67,.12);border:1px solid var(--border);border-radius:50px;padding:4px 12px">
+                <span style="font-size:.76rem;color:var(--gold);font-weight:700">↔️ تحريك:</span>
+                <button type="button" onclick="scrollTable('left')" title="تحريك لرؤية الملاحظات والقطاعات على اليسار" style="background:var(--gold);border:none;color:#0a0a14;border-radius:20px;padding:4px 14px;cursor:pointer;font-size:.78rem;font-weight:800">⬅️ يسار</button>
+                <button type="button" onclick="scrollTable('right')" title="تحريك للبداية والاسم على اليمين" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:4px 14px;cursor:pointer;font-size:.78rem;font-weight:700">يمين ➡️</button>
               </div>
               <a href="index.html" id="addMemberBtn" target="_blank" style="background:rgba(212,168,67,.12);border:1px solid var(--border);color:var(--gold);border-radius:50px;padding:6px 16px;font-family:'Cairo',sans-serif;font-size:.78rem;text-decoration:none;display:inline-flex;align-items:center;gap:5px">➕ إضافة عضو</a>
               <button onclick="loadDashboard()" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:50px;padding:6px 14px;font-family:'Cairo',sans-serif;font-size:.78rem;cursor:pointer">🔄 تحديث</button>
             </div>
           </div>
+          <div style="padding:8px 18px;background:rgba(212,168,67,.04);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:.75rem;color:rgba(255,255,255,.6);flex-wrap:wrap;gap:8px">
+            <div>💡 <strong>طرق التصفح:</strong> يمكنك استخدام عجلة الماوس، أو السحب بالماوس (Drag)، أو أزرار ⬅️ يسار / يمين ➡️</div>
+            <div style="color:var(--gold);font-weight:600">📌 عمود الإجراءات (طباعة / تعديل / حذف) مثبت ومرئي دائماً على اليسار</div>
+          </div>
           <div class="table-wrap" id="tableWrap">
             <table>
-              <thead><tr><th>#</th><th>الصورة</th><th>الاسم</th><th>تاريخ الميلاد</th><th>الولاية</th><th>الإقليم</th><th>الهاتف</th><th>الصفة</th><th>القطاع الحالي</th><th>الحالة</th><th>تاريخ الانضمام</th><th>الملاحظات</th><th style="text-align:center;min-width:180px">الإجراءات</th></tr></thead>
+              <thead><tr><th>#</th><th>الصورة</th><th>الاسم</th><th>تاريخ الميلاد</th><th>الولاية</th><th>الإقليم</th><th>الهاتف</th><th>الصفة</th><th>القطاع الحالي</th><th>الحالة</th><th>تاريخ الانضمام</th><th>الملاحظات</th><th class="col-actions" style="text-align:center;min-width:180px">⚡ الإجراءات</th></tr></thead>
               <tbody id="membersTbody"></tbody>
             </table>
             <div class="empty-state" id="emptyState" style="display:none"><div style="font-size:2.5rem;margin-bottom:10px">🗄️</div>لا توجد سجلات بعد.</div>
@@ -1304,18 +1333,72 @@
         html += '<td>' + escapeHtml(m.current_sector || '—') + '</td>';
         html += '<td><span class="badge ' + badgeClass + '">' + statusText + '</span></td>';
         html += '<td>' + escapeHtml(m.join_date || '—') + '</td>';
-        html += '<td style="max-width:180px;min-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.75rem;color:rgba(255,255,255,.6)" title="' + escapeHtml(m.notes || '') + '">' + escapeHtml(m.notes || '—') + '</td>';
-        html += '<td style="text-align:center;white-space:nowrap;min-width:180px">' + actionBtns + '</td>';
+        html += '<td class="col-actions" style="text-align:center;white-space:nowrap;min-width:180px">' + actionBtns + '</td>';
         html += '</tr>';
       });
       tbody.innerHTML = html;
+      initTableScrollHelpers();
     }
 
-    function scrollTable(dx) {
+    function scrollTable(dir) {
       var tw = document.getElementById('tableWrap');
-      if (tw) {
-        tw.scrollBy({ left: dx, behavior: 'smooth' });
+      if (!tw) return;
+      var step = 400;
+      if (dir === 'left') {
+        var old = tw.scrollLeft;
+        tw.scrollBy({ left: -step, behavior: 'smooth' });
+        setTimeout(function() {
+          if (tw.scrollLeft === old) {
+            tw.scrollBy({ left: step, behavior: 'smooth' });
+          }
+        }, 50);
+      } else {
+        var old = tw.scrollLeft;
+        tw.scrollBy({ left: step, behavior: 'smooth' });
+        setTimeout(function() {
+          if (tw.scrollLeft === old) {
+            tw.scrollBy({ left: -step, behavior: 'smooth' });
+          }
+        }, 50);
       }
+    }
+
+    function initTableScrollHelpers() {
+      var tw = document.getElementById('tableWrap');
+      if (!tw || tw._hasScrollHelpers) return;
+      tw._hasScrollHelpers = true;
+
+      var isDown = false;
+      var startX, scrollLeftVal;
+
+      tw.addEventListener('mousedown', function(e) {
+        if (e.target.closest('button, a, input, select')) return;
+        isDown = true;
+        startX = e.pageX - tw.offsetLeft;
+        scrollLeftVal = tw.scrollLeft;
+      });
+
+      window.addEventListener('mouseup', function() {
+        isDown = false;
+      });
+
+      tw.addEventListener('mousemove', function(e) {
+        if (!isDown) return;
+        e.preventDefault();
+        var x = e.pageX - tw.offsetLeft;
+        var walk = (x - startX) * 1.6;
+        tw.scrollLeft = scrollLeftVal - walk;
+      });
+
+      tw.addEventListener('wheel', function(e) {
+        if (e.deltaY !== 0 && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          var canScroll = tw.scrollWidth > tw.clientWidth;
+          if (canScroll) {
+            e.preventDefault();
+            tw.scrollLeft += e.deltaY;
+          }
+        }
+      }, { passive: false });
     }
 
     function filterTable() {
