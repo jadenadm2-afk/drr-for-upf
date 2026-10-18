@@ -1241,6 +1241,64 @@
       });
     }
 
+    function renderTable(data) {
+      var tbody = document.getElementById('membersTbody');
+      var emptyEl = document.getElementById('emptyState');
+      var loadingEl = document.getElementById('loadingState');
+      if (loadingEl) loadingEl.style.display = 'none';
+
+      var countEl = document.getElementById('tCount');
+      if (countEl) countEl.textContent = '(' + data.length + ')';
+      var tableCountEl = document.getElementById('tableCount');
+      if (tableCountEl) tableCountEl.textContent = 'إجمالي السجلات: ' + data.length + ' عضو';
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '';
+        if (emptyEl) emptyEl.style.display = 'block';
+        return;
+      }
+      if (emptyEl) emptyEl.style.display = 'none';
+
+      var isAdmin = currentUserRole === 'admin';
+      var html = '';
+      data.forEach(function(m, idx) {
+        var status = (m.membership_status || 'pending').toLowerCase();
+        var badgeClass = status === 'active' ? 'b-active' : status === 'inactive' ? 'b-inactive' : 'b-pending';
+        var statusText = status === 'active' ? 'نشط' : status === 'inactive' ? 'غير نشط' : 'قيد المراجعة';
+        var safeId = escapeHtml(String(m.id || ''));
+
+        var photoCell = '';
+        if (m.photo_base64 && m.photo_base64.startsWith('data:image/')) {
+          photoCell = '<td class="photo-cell"><img src="' + m.photo_base64 + '" alt="صورة" onclick="openPhotoModal(\'' + m.photo_base64 + '\',\'' + escapeHtml(m.full_name || '') + '\')" style="cursor:zoom-in" title="' + escapeHtml(m.full_name || '') + '"/></td>';
+        } else {
+          photoCell = '<td class="photo-cell"><div class="no-photo" title="لا توجد صورة">👤</div></td>';
+        }
+
+        var actionBtns = '<button class="btn-act btn-act-print" onclick="openPrintModal(\'' + safeId + '\')" title="طباعة بيانات العضو">🖨️ طباعة</button>';
+        if (isAdmin) {
+          actionBtns += ' <button class="btn-act btn-act-edit" onclick="openEditModal(\'' + safeId + '\')" title="تعديل بيانات العضو">✏️ تعديل</button>';
+          actionBtns += ' <button class="btn-act btn-act-del" onclick="deleteMember(\'' + safeId + '\')" title="حذف العضو">🗑️ حذف</button>';
+        }
+
+        html += '<tr>';
+        html += '<td style="color:rgba(255,255,255,.4);font-size:.75rem">' + (idx + 1) + '</td>';
+        html += photoCell;
+        html += '<td style="font-weight:600;color:#fff;max-width:180px;white-space:normal">' + escapeHtml(m.full_name || '—') + '</td>';
+        html += '<td>' + escapeHtml(m.date_of_birth || '—') + '</td>';
+        html += '<td>' + escapeHtml(m.state || '—') + '</td>';
+        html += '<td>' + escapeHtml(m.region || '—') + '</td>';
+        html += '<td dir="ltr" style="text-align:right">' + escapeHtml(m.phone || '—') + '</td>';
+        html += '<td>' + escapeHtml(m.organizational_role || '—') + '</td>';
+        html += '<td>' + escapeHtml(m.current_sector || '—') + '</td>';
+        html += '<td><span class="badge ' + badgeClass + '">' + statusText + '</span></td>';
+        html += '<td>' + escapeHtml(m.join_date || '—') + '</td>';
+        html += '<td style="max-width:120px;white-space:normal;font-size:.74rem;color:rgba(255,255,255,.5)">' + escapeHtml(m.notes || '—') + '</td>';
+        html += '<td style="text-align:center;white-space:nowrap">' + actionBtns + '</td>';
+        html += '</tr>';
+      });
+      tbody.innerHTML = html;
+    }
+
         function filterTable() {
       var q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
       var stFilter = document.getElementById('filterStatus').value;
