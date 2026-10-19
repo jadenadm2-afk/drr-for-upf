@@ -80,6 +80,9 @@ const Member = sequelize.define('Member', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  nickname: { type: DataTypes.STRING },
+  college: { type: DataTypes.STRING },
+  specialization: { type: DataTypes.STRING },
   date_of_birth: { type: DataTypes.STRING },
   place_of_birth: { type: DataTypes.STRING },
   current_residence: { type: DataTypes.STRING },
@@ -229,7 +232,7 @@ app.get('/api/status', async (req, res) => {
 app.post('/api/members', registrationLimiter, async (req, res) => {
   try {
     const {
-      full_name, date_of_birth, place_of_birth, current_residence,
+      full_name, nickname, college, specialization, date_of_birth, place_of_birth, current_residence,
       state, region, locality, phone, email, photo_base64,
       organizational_role, join_date, executive_sector, first_sector,
       current_sector, membership_status, last_record_update, notes
@@ -249,6 +252,9 @@ app.post('/api/members', registrationLimiter, async (req, res) => {
 
     const member = await Member.create({
       full_name: cleanName,
+      nickname: sanitize(nickname),
+      college: sanitize(college),
+      specialization: sanitize(specialization),
       date_of_birth: sanitize(date_of_birth),
       place_of_birth: sanitize(place_of_birth),
       current_residence: sanitize(current_residence),
@@ -352,7 +358,7 @@ app.put('/api/members/:id', requireAdmin, async (req, res) => {
     }
 
     const {
-      full_name, date_of_birth, place_of_birth, current_residence,
+      full_name, nickname, college, specialization, date_of_birth, place_of_birth, current_residence,
       state, region, locality, phone, email, photo_base64,
       organizational_role, join_date, executive_sector, first_sector,
       current_sector, membership_status, last_record_update, notes
@@ -374,6 +380,9 @@ app.put('/api/members/:id', requireAdmin, async (req, res) => {
 
     await member.update({
       full_name: cleanName,
+      nickname: sanitize(nickname),
+      college: sanitize(college),
+      specialization: sanitize(specialization),
       date_of_birth: sanitize(date_of_birth),
       place_of_birth: sanitize(place_of_birth),
       current_residence: sanitize(current_residence),
@@ -471,8 +480,17 @@ app.get('/admin', (req, res) => {
 // ═══════════════════════════════════════════════════════
 // SERVER BOOTSTRAP
 // ═══════════════════════════════════════════════════════
-sequelize.sync({ alter: true })
+sequelize.sync()
   .then(async () => {
+    try {
+      const qi = sequelize.getQueryInterface();
+      const tableDesc = await qi.describeTable('members');
+      if (!tableDesc.nickname) await qi.addColumn('members', 'nickname', { type: DataTypes.STRING });
+      if (!tableDesc.college) await qi.addColumn('members', 'college', { type: DataTypes.STRING });
+      if (!tableDesc.specialization) await qi.addColumn('members', 'specialization', { type: DataTypes.STRING });
+    } catch (migErr) {
+      // Column exists or table structure already aligned
+    }
     console.log(`Sequelize synchronized successfully with ${sequelize.getDialect()}!`);
     await initSystemUsers();
     app.listen(PORT, '0.0.0.0', () => {

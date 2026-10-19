@@ -421,7 +421,7 @@
           </div>
           <div class="table-wrap" id="tableWrap">
             <table>
-              <thead><tr><th>#</th><th>الصورة</th><th>الاسم</th><th>تاريخ الميلاد</th><th>الولاية</th><th>الإقليم</th><th>الهاتف</th><th>الصفة</th><th>القطاع الحالي</th><th>الحالة</th><th>تاريخ الانضمام</th><th>الملاحظات</th><th class="col-actions" style="text-align:center;min-width:180px">⚡ الإجراءات</th></tr></thead>
+              <thead><tr><th>#</th><th>الصورة</th><th>الاسم</th><th>اللقب</th><th>الكلية</th><th>التخصص</th><th>تاريخ الميلاد</th><th>الولاية</th><th>الإقليم</th><th>الهاتف</th><th>الصفة</th><th>القطاع الحالي</th><th>الحالة</th><th>تاريخ الانضمام</th><th>الملاحظات</th><th class="col-actions" style="text-align:center;min-width:180px">⚡ الإجراءات</th></tr></thead>
               <tbody id="membersTbody"></tbody>
             </table>
             <div class="empty-state" id="emptyState" style="display:none"><div style="font-size:2.5rem;margin-bottom:10px">🗄️</div>لا توجد سجلات بعد.</div>
@@ -549,6 +549,18 @@
           <div class="edit-field full">
             <label>👤 الاسم الكامل (رباعي) *</label>
             <input type="text" id="edit_name" required placeholder="الاسم الكامل"/>
+          </div>
+          <div class="edit-field">
+            <label>🏷️ اللقب</label>
+            <input type="text" id="edit_nickname" placeholder="اللقب / الاسم الحركي"/>
+          </div>
+          <div class="edit-field">
+            <label>🎓 الكلية</label>
+            <input type="text" id="edit_college" placeholder="اسم الكلية"/>
+          </div>
+          <div class="edit-field full">
+            <label>🔬 التخصص</label>
+            <input type="text" id="edit_specialization" placeholder="التخصص الدراسي أو الأكاديمي"/>
           </div>
           <div class="edit-field">
             <label>📅 تاريخ الميلاد</label>
@@ -705,7 +717,15 @@
               </colgroup>
               <tr>
                 <td class="ps-lbl">الاسم الكامل:</td>
-                <td class="ps-val" colspan="3"><strong id="psFullName" style="font-size:1.02rem;color:#1a1a5e"></strong></td>
+                <td class="ps-val"><strong id="psFullName" style="font-size:1.02rem;color:#1a1a5e"></strong></td>
+                <td class="ps-lbl">اللقب:</td>
+                <td class="ps-val" id="psNickname"></td>
+              </tr>
+              <tr>
+                <td class="ps-lbl">الكلية:</td>
+                <td class="ps-val" id="psCollege"></td>
+                <td class="ps-lbl">التخصص:</td>
+                <td class="ps-val" id="psSpecialization"></td>
               </tr>
               <tr>
                 <td class="ps-lbl">تاريخ الميلاد:</td>
@@ -1325,6 +1345,9 @@
         html += '<td style="color:rgba(255,255,255,.4);font-size:.75rem">' + (idx + 1) + '</td>';
         html += photoCell;
         html += '<td style="font-weight:600;color:#fff;max-width:180px;white-space:normal">' + escapeHtml(m.full_name || '—') + '</td>';
+        html += '<td style="color:var(--gold);font-weight:600">' + escapeHtml(m.nickname || '—') + '</td>';
+        html += '<td>' + escapeHtml(m.college || '—') + '</td>';
+        html += '<td>' + escapeHtml(m.specialization || '—') + '</td>';
         html += '<td>' + escapeHtml(m.date_of_birth || '—') + '</td>';
         html += '<td>' + escapeHtml(m.state || '—') + '</td>';
         html += '<td>' + escapeHtml(m.region || '—') + '</td>';
@@ -1409,10 +1432,13 @@
         var matchQ = true;
         if (q) {
           var name = (m.full_name || '').toLowerCase();
+          var nickname = (m.nickname || '').toLowerCase();
+          var college = (m.college || '').toLowerCase();
+          var spec = (m.specialization || '').toLowerCase();
           var state = (m.state || '').toLowerCase();
           var phone = (m.phone || '').toLowerCase();
           var role = (m.organizational_role || '').toLowerCase();
-          matchQ = name.includes(q) || state.includes(q) || phone.includes(q) || role.includes(q);
+          matchQ = name.includes(q) || nickname.includes(q) || college.includes(q) || spec.includes(q) || state.includes(q) || phone.includes(q) || role.includes(q);
         }
         var matchSt = true;
         if (stFilter) {
@@ -1474,6 +1500,9 @@
 
       document.getElementById('edit_id').value = m.id || '';
       document.getElementById('edit_name').value = m.full_name || '';
+      document.getElementById('edit_nickname').value = m.nickname || '';
+      document.getElementById('edit_college').value = m.college || '';
+      document.getElementById('edit_specialization').value = m.specialization || '';
       document.getElementById('edit_dob').value = m.date_of_birth || '';
       document.getElementById('edit_pob').value = m.place_of_birth || '';
       document.getElementById('edit_residence').value = m.current_residence || '';
@@ -1555,6 +1584,9 @@
 
       var payload = {
         full_name: document.getElementById('edit_name').value.trim(),
+        nickname: document.getElementById('edit_nickname').value.trim(),
+        college: document.getElementById('edit_college').value.trim(),
+        specialization: document.getElementById('edit_specialization').value.trim(),
         date_of_birth: document.getElementById('edit_dob').value,
         place_of_birth: document.getElementById('edit_pob').value.trim(),
         current_residence: document.getElementById('edit_residence').value.trim(),
@@ -1638,6 +1670,9 @@
 
       // Data fields
       document.getElementById('psFullName').textContent = m.full_name || '—';
+      document.getElementById('psNickname').textContent = m.nickname || '—';
+      document.getElementById('psCollege').textContent = m.college || '—';
+      document.getElementById('psSpecialization').textContent = m.specialization || '—';
       document.getElementById('psDob').textContent = m.date_of_birth || '—';
       document.getElementById('psPob').textContent = m.place_of_birth || '—';
       document.getElementById('psRegion').textContent = m.region || '—';

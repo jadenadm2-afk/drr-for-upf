@@ -171,21 +171,24 @@
         </div>
         <input type="file" id="memberPhotoInput" accept="image/*" onchange="handlePhoto(event)" style="display:none"/>
       </div>
-      <div class="section-title"><span>👤</span> البيانات الشخصية</div>
+      <div class="section-title"><span>👤</span> البيانات الشخصية والجامعية</div>
       <div class="form-grid">
         <div class="field full-width"><label><span class="num">1</span> الاسم الكامل</label><input type="text" id="f_name" placeholder="أدخل الاسم الرباعي" required/></div>
-        <div class="field"><label><span class="num">2</span> تاريخ الميلاد</label><input type="date" id="f_dob"/></div>
-        <div class="field"><label><span class="num">3</span> مكان الميلاد</label><input type="text" id="f_pob" placeholder="مكان الميلاد"/></div>
-        <div class="field full-width"><label><span class="num">4</span> مكان الإقامة الحالية</label><input type="text" id="f_residence" placeholder="العنوان التفصيلي"/></div>
-        <div class="field"><label><span class="num">5</span> الولاية</label><input type="text" id="f_state" placeholder="الولاية"/></div>
-        <div class="field"><label><span class="num">6</span> الإقليم</label><input type="text" id="f_region" placeholder="الإقليم"/></div>
-        <div class="field"><label><span class="num">7</span> المحلية / المقاطعة</label><input type="text" id="f_locality" placeholder="المحلية أو المقاطعة"/></div>
-        <div class="field"><label><span class="num">8</span> رقم الهاتف</label><input type="tel" id="f_phone" placeholder="+249 9XX XXX XXX" dir="ltr"/></div>
-        <div class="field full-width"><label><span class="num">9</span> البريد الإلكتروني</label><input type="email" id="f_email" placeholder="example@email.com" dir="ltr"/></div>
+        <div class="field"><label><span class="num">2</span> اللقب</label><input type="text" id="f_nickname" placeholder="اللقب / الاسم الحركي أو المعروف به"/></div>
+        <div class="field"><label><span class="num">3</span> الكلية</label><input type="text" id="f_college" placeholder="اسم الكلية (مثال: كلية التربية، كلية الزراعة...)"/></div>
+        <div class="field full-width"><label><span class="num">4</span> التخصص</label><input type="text" id="f_specialization" placeholder="التخصص الدراسي أو الأكاديمي"/></div>
+        <div class="field"><label><span class="num">5</span> تاريخ الميلاد</label><input type="date" id="f_dob"/></div>
+        <div class="field"><label><span class="num">6</span> مكان الميلاد</label><input type="text" id="f_pob" placeholder="مكان الميلاد"/></div>
+        <div class="field full-width"><label><span class="num">7</span> مكان الإقامة الحالية</label><input type="text" id="f_residence" placeholder="العنوان التفصيلي"/></div>
+        <div class="field"><label><span class="num">8</span> الولاية</label><input type="text" id="f_state" placeholder="الولاية"/></div>
+        <div class="field"><label><span class="num">9</span> الإقليم</label><input type="text" id="f_region" placeholder="الإقليم"/></div>
+        <div class="field"><label><span class="num">10</span> المحلية / المقاطعة</label><input type="text" id="f_locality" placeholder="المحلية أو المقاطعة"/></div>
+        <div class="field"><label><span class="num">11</span> رقم الهاتف</label><input type="tel" id="f_phone" placeholder="+249 9XX XXX XXX" dir="ltr"/></div>
+        <div class="field full-width"><label><span class="num">12</span> البريد الإلكتروني</label><input type="email" id="f_email" placeholder="example@email.com" dir="ltr"/></div>
       </div>
       <div class="section-title"><span>🏛</span> البيانات التنظيمية</div>
       <div class="form-grid">
-        <div class="field"><label><span class="num">10</span> الصفة التنظيمية</label>
+        <div class="field"><label><span class="num">13</span> الصفة التنظيمية</label>
           <input type="text" id="f_role" list="roleOptions" placeholder="اختر من القائمة أو اكتب الصفة يدوياً..." autocomplete="off"/>
           <datalist id="roleOptions">
             <option value="عضو عادي"></option>
@@ -197,14 +200,14 @@
             <option value="مناصر"></option>
           </datalist>
         </div>
-        <div class="field"><label><span class="num">11</span> تاريخ الانضمام</label><input type="date" id="f_joinDate"/></div>
-        <div class="field"><label><span class="num">12</span> القطاع – المجلس التنفيذي</label><input type="text" id="f_execSector" placeholder="قطاع المجلس التنفيذي"/></div>
-        <div class="field"><label><span class="num">13</span> القطاع الأول للعضو</label><input type="text" id="f_firstSector" placeholder="القطاع الأول"/></div>
-        <div class="field"><label><span class="num">14</span> القطاع الحالي</label><input type="text" id="f_currentSector" placeholder="القطاع الحالي"/></div>
-        <div class="field"><label><span class="num">15</span> حالة العضوية</label>
+        <div class="field"><label><span class="num">14</span> تاريخ الانضمام</label><input type="date" id="f_joinDate"/></div>
+        <div class="field"><label><span class="num">15</span> القطاع – المجلس التنفيذي</label><input type="text" id="f_execSector" placeholder="قطاع المجلس التنفيذي"/></div>
+        <div class="field"><label><span class="num">16</span> القطاع الأول للعضو</label><input type="text" id="f_firstSector" placeholder="القطاع الأول"/></div>
+        <div class="field"><label><span class="num">17</span> القطاع الحالي</label><input type="text" id="f_currentSector" placeholder="القطاع الحالي"/></div>
+        <div class="field"><label><span class="num">18</span> حالة العضوية</label>
           <select id="f_status"><option value="">-- اختر الحالة --</option><option value="active">نشط</option><option value="inactive">غير نشط</option><option value="pending">قيد المراجعة</option></select></div>
-        <div class="field"><label><span class="num">16</span> تاريخ آخر تحديث للسجل</label><input type="date" id="f_lastUpdate"/></div>
-        <div class="field full-width"><label><span class="num">17</span> الملاحظات التنظيمية والإدارية</label><textarea id="f_notes" placeholder="أي ملاحظات تنظيمية أو إدارية إضافية..."></textarea></div>
+        <div class="field"><label><span class="num">19</span> تاريخ آخر تحديث للسجل</label><input type="date" id="f_lastUpdate"/></div>
+        <div class="field full-width"><label><span class="num">20</span> الملاحظات التنظيمية والإدارية</label><textarea id="f_notes" placeholder="أي ملاحظات تنظيمية أو إدارية إضافية..."></textarea></div>
       </div>
       <div class="submit-row">
         <button type="submit" class="btn-submit" id="submitBtn">✦ حفظ في قاعدة البيانات ✦</button>
@@ -235,7 +238,29 @@
       var btn=document.getElementById('submitBtn');var st=document.getElementById('saveStatus');
       btn.disabled=true;btn.innerHTML='<span class="loader"></span> جاري الحفظ...';
       st.className='save-status loading';st.textContent='⏳ جاري الحفظ في قاعدة بيانات PostgreSQL...';
-      var rec={full_name:name,date_of_birth:gv('f_dob')||null,place_of_birth:gv('f_pob')||null,current_residence:gv('f_residence')||null,state:gv('f_state')||null,region:gv('f_region')||null,locality:gv('f_locality')||null,phone:gv('f_phone')||null,email:gv('f_email')||null,photo_base64:currentPhoto||null,organizational_role:gv('f_role')||null,join_date:gv('f_joinDate')||null,executive_sector:gv('f_execSector')||null,first_sector:gv('f_firstSector')||null,current_sector:gv('f_currentSector')||null,membership_status:gv('f_status')||'pending',last_record_update:gv('f_lastUpdate')||null,notes:gv('f_notes')||null};
+      var rec={
+        full_name:name,
+        nickname:gv('f_nickname')||null,
+        college:gv('f_college')||null,
+        specialization:gv('f_specialization')||null,
+        date_of_birth:gv('f_dob')||null,
+        place_of_birth:gv('f_pob')||null,
+        current_residence:gv('f_residence')||null,
+        state:gv('f_state')||null,
+        region:gv('f_region')||null,
+        locality:gv('f_locality')||null,
+        phone:gv('f_phone')||null,
+        email:gv('f_email')||null,
+        photo_base64:currentPhoto||null,
+        organizational_role:gv('f_role')||null,
+        join_date:gv('f_joinDate')||null,
+        executive_sector:gv('f_execSector')||null,
+        first_sector:gv('f_firstSector')||null,
+        current_sector:gv('f_currentSector')||null,
+        membership_status:gv('f_status')||'pending',
+        last_record_update:gv('f_lastUpdate')||null,
+        notes:gv('f_notes')||null
+      };
       
       try {
         var res = await fetch('/api/members', {
