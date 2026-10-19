@@ -14,15 +14,18 @@
     .page{display:none;min-height:100vh;animation:fadeIn .45s ease}
     .page.active{display:block}
     @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-    .site-header{text-align:center;padding:40px 20px 28px;position:relative}
-    .site-header::after{content:'';display:block;width:60%;max-width:440px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:16px auto 0}
-    .logos-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:14px;flex-wrap:wrap}
-    .logo-img{width:80px;height:80px;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(212,168,67,.42));border-radius:50%;background:rgba(255,255,255,.05);padding:4px;transition:transform .3s}
-    .logo-img:hover{transform:scale(1.09) rotate(4deg)}
-    .header-motto{font-family:'Amiri',serif;font-size:.95rem;color:var(--gold);letter-spacing:2px;margin-bottom:6px}
-    .header-org{font-size:1.4rem;font-weight:800;color:#fff;line-height:1.4}
-    .header-org span{color:var(--gold)}
-    .header-sub{font-size:.83rem;color:rgba(255,255,255,.55);margin-top:4px}
+    .site-header{text-align:center;padding:36px 20px 24px;position:relative}
+    .site-header::after{content:'';display:block;width:60%;max-width:540px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:18px auto 0}
+    .header-flanked-wrap{display:flex;align-items:center;justify-content:center;gap:24px;max-width:880px;margin:0 auto}
+    .header-logo-side{flex-shrink:0}
+    .logo-img{width:86px;height:86px;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(212,168,67,.42));border-radius:50%;background:rgba(255,255,255,.05);padding:4px;transition:transform .3s}
+    .logo-img:hover{transform:scale(1.08)}
+    .header-center-text{text-align:center;flex:1}
+    .header-motto{font-family:'Amiri',serif;font-size:1.05rem;color:var(--gold);letter-spacing:1px;margin-bottom:3px;font-weight:700}
+    .header-org-main{font-size:1.45rem;font-weight:800;color:#fff;line-height:1.3;margin-bottom:3px}
+    .header-org-lead{font-size:.88rem;color:#ef9a9a;font-weight:700;margin-bottom:3px}
+    .header-org-front{font-size:1.2rem;font-weight:800;color:var(--gold);margin-bottom:3px}
+    .header-org-council{font-size:.88rem;color:rgba(255,255,255,.75);font-weight:600}
     /* INTRO */
     .intro-body{max-width:760px;margin:0 auto;padding:0 20px 60px}
     .steps-ribbon{display:flex;align-items:flex-start;justify-content:center;margin:22px 0 28px;flex-wrap:wrap}
@@ -96,7 +99,7 @@
     .particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
     .particle{position:absolute;border-radius:50%;animation:float linear infinite;opacity:0}
     @keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:.5}90%{opacity:.15}100%{transform:translateY(-80px) rotate(720deg);opacity:0}}
-    @media(max-width:600px){.form-card{padding:22px 14px 36px}.form-grid{grid-template-columns:1fr}.full-width{grid-column:1}.header-org{font-size:1.1rem}.logo-img{width:62px;height:62px}.greeting-card{padding:26px 18px}.step-item:not(:last-child)::after{display:none}}
+    @media(max-width:600px){.header-flanked-wrap{flex-direction:row;gap:10px}.logo-img{width:54px;height:54px}.header-org-main{font-size:1.15rem}.header-org-front{font-size:1.05rem}.header-motto{font-size:.82rem}.header-org-lead{font-size:.76rem}.header-org-council{font-size:.78rem}.form-card{padding:22px 14px 36px}.form-grid{grid-template-columns:1fr}.full-width{grid-column:1}.greeting-card{padding:26px 18px}.step-item:not(:last-child)::after{display:none}}
   </style>
 </head>
 <body>
@@ -105,14 +108,21 @@
   <!-- PAGE: INTRO -->
   <div class="page active" id="page-intro">
     <header class="site-header">
-      <div class="logos-row">
-        <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM (1).jpeg" alt="شعار الحركة" class="logo-img"/>
-        <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM.jpeg"     alt="شعار الراية"  class="logo-img"/>
-        <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM (2).jpeg" alt="SLM/A"        class="logo-img"/>
+      <div class="header-flanked-wrap">
+        <div class="header-logo-side">
+          <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM (2).jpeg" alt="شعار الحركة" class="logo-img"/>
+        </div>
+        <div class="header-center-text">
+          <p class="header-motto">الحرية العدل السلام الديمقراطية</p>
+          <h1 class="header-org-main">حركة/ جيش تحرير السودان</h1>
+          <p class="header-org-lead">قيادة الرفيق / عبدالواحد محمد احمد النور</p>
+          <h2 class="header-org-front">الجبهة الشعبية المتحدة UPF</h2>
+          <p class="header-org-council">المجلس التنفيذي - جامعة زالنجي</p>
+        </div>
+        <div class="header-logo-side">
+          <img src="WhatsApp Image 2026-10-17 at 3.46.40 PM.jpeg" alt="راية الحركة" class="logo-img"/>
+        </div>
       </div>
-      <p class="header-motto">الحرية &nbsp;·&nbsp; العدل &nbsp;·&nbsp; السلام &nbsp;·&nbsp; الديمقراطية</p>
-      <h1 class="header-org">حركة / جيش تحرير السودان<br/><span>الجبهة الشعبية المتحدة UPF</span></h1>
-      <p class="header-sub">قيادة الرفيق / عبدالواحد محمد احمد النور &nbsp;|&nbsp; المجلس التنفيذي – جامعة زالنجي</p>
     </header>
     <div class="intro-body">
       <div class="steps-ribbon">
